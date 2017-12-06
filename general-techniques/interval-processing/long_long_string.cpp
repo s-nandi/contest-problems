@@ -1,5 +1,5 @@
 //interval processing
-//https://open.kattis.com/problems/longlongstrings
+//https://open.kattis.com/problems/longlongstrings (2017 Mid-Atlantic Regional)
 
 #include <iostream>
 #include <vector>
