@@ -1,4 +1,4 @@
-//binary lifting
+//binary lifting, partial sum on tree
 //http://codeforces.com/problemset/problem/739/B
 
 #include <iostream>
