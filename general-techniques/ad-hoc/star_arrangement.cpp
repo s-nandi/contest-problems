@@ -1,4 +1,6 @@
-//Saujas Nandi
+//ad-hoc, math
+//https://open.kattis.com/problems/stararrangements
+
 #include <iostream>
 #include <set>
 
