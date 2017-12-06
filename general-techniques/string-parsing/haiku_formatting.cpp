@@ -1,4 +1,6 @@
-//Saujas Nandi
+//string parsing
+//https://open.kattis.com/problems/haikuformatting
+
 #include <iostream>
 #include <vector>
 #include <cctype>
