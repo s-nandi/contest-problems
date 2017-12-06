@@ -1,5 +1,5 @@
 //string parsing
-//https://open.kattis.com/problems/haikuformatting
+//https://open.kattis.com/problems/haikuformatting (2017 Mid-Atlantic Regional)
 
 #include <iostream>
 #include <vector>
