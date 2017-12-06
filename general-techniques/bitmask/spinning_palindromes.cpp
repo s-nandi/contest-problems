@@ -1,5 +1,5 @@
 //bitmask, palindromes
-//https://open.kattis.com/problems/spinningup
+//https://open.kattis.com/problems/spinningup (2017 Mid-Atlantic Regional)
 
 #include <iostream>
 #include <vector>
