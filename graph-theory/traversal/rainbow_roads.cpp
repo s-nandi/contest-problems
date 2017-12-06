@@ -1,5 +1,5 @@
 //traversal
-//https://open.kattis.com/problems/rainbowroads
+//https://open.kattis.com/problems/rainbowroads (2017 Mid-Atlantic Regional)
 
 #include <iostream>
 #include <vector>
