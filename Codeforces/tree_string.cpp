@@ -1,4 +1,5 @@
 //Rolling Hash, Rabin-Karp, Backtrack
+//http://codeforces.com/problemset/problem/291/E
 
 #include <iostream>
 #include <vector>
