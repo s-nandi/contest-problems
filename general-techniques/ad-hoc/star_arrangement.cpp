@@ -1,5 +1,5 @@
 //ad-hoc, math
-//https://open.kattis.com/problems/stararrangements
+//https://open.kattis.com/problems/stararrangements (2017 Mid-Atlantic Regional)
 
 #include <iostream>
 #include <set>
