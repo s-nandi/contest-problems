@@ -1,4 +1,6 @@
-//Saujas Nandi
+//interval processing
+//https://open.kattis.com/problems/longlongstrings
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
