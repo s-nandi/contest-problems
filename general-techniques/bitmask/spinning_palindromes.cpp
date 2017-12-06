@@ -1,4 +1,6 @@
-//Saujas Nandi
+//bitmask, palindromes
+//https://open.kattis.com/problems/spinningup
+
 #include <iostream>
 #include <vector>
 #include <set>
