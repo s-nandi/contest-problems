@@ -1,4 +1,6 @@
-//Saujas Nandi
+//dynamic programming, convex hull trick
+//https://open.kattis.com/problems/avoidingairports
+
 #include <vector>
 #include <iostream>
 #include <algorithm>
