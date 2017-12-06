@@ -1,4 +1,5 @@
 //SCC (Kosaraju)
+//http://codeforces.com/contest/427/problem/C
 
 #include <stack>
 #include <vector>
