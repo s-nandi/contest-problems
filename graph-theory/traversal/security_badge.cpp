@@ -1,5 +1,5 @@
 //traversal, sorting
-//https://open.kattis.com/problems/securitybadge
+//https://open.kattis.com/problems/securitybadge (2017 Mid-Atlantic Regional)
 
 #include <set>
 #include <iostream>
