@@ -1,4 +1,6 @@
-//Saujas Nandi
+//traversal, sorting
+//https://open.kattis.com/problems/securitybadge
+
 #include <set>
 #include <iostream>
 #include <map>
