@@ -1,4 +1,6 @@
-//Saujas Nandi
+//dynamic programming, kadane's algorithm
+//https://open.kattis.com/problems/purplerain
+
 #include <iostream>
 #include <vector>
 #include <utility>
