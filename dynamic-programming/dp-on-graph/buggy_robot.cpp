@@ -26,7 +26,6 @@ int dijkstra(vector <vector<char>> &grid, int starti, int startj, int endi, int 
 {
     priority_queue <node, vector<node>, greater<node>> q;
     int d[H][W][s.length() + 1];
-    int vis[H][W][s.length() + 1];
 
     for (int k = 0; k <= s.length(); k++)
     {
@@ -35,7 +34,6 @@ int dijkstra(vector <vector<char>> &grid, int starti, int startj, int endi, int 
             for (int j = 0; j < grid[0].size(); j++)
             {
                 d[i][j][k] = INF;
-                vis[i][j][k] = 0;
             }
         }
     }
@@ -49,13 +47,6 @@ int dijkstra(vector <vector<char>> &grid, int starti, int startj, int endi, int 
     {
         node curr = q.top();
         q.pop();
-
-        if (vis[curr.i][curr.j][curr.at] == 1)
-        {
-            continue;
-        }
-
-        vis[curr.i][curr.j][curr.at] = 1;
 
         if (curr.i == endi and curr.j == endj)
         {
