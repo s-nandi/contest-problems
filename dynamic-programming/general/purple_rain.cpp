@@ -1,4 +1,4 @@
-//dynamic programming, kadane's algorithm
+//dynamic programming(kadane's algorithm)
 //https://open.kattis.com/problems/purplerain (2017 Mid-Atlantic Regional)
 
 #include <iostream>
