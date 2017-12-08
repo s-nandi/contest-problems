@@ -99,9 +99,6 @@ int bfs(int start, vector <vector <char>> &grid, vector <pt> &checkpoints, int l
 
 int main()
 {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
     while(cin>>W>>H)
     {
         if (W == 0 and H == 0)
