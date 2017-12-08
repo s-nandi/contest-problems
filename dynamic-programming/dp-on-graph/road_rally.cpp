@@ -33,13 +33,6 @@ struct state
     int goal;
 
     int t;
-
-    bool operator > (state o) const
-    {
-        pair <pt, pt> pij = {{x, y}, {dx, dy}};
-        pair <pt, pt> pij2 = {{o.x, o.y}, {o.dx, o.dy}};
-        return t > o.t or (t == o.t and goal < o.goal) or (t == o.t and goal == o.goal and pij > pij2);
-    }
 };
 
 bool isValid(pt p, vector <vector<char>> &grid)
@@ -50,12 +43,12 @@ bool isValid(pt p, vector <vector<char>> &grid)
     return !(c == 'x' or c == 'X');
 }
 
-vector <int> dxarr = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
-vector <int> dyarr = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
+const int dxarr[9] = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
+const int dyarr[9] = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
 
-int dijkstra(int start, vector <vector <char>> &grid, vector <pt> &checkpoints, int last)
+int bfs(int start, vector <vector <char>> &grid, vector <pt> &checkpoints, int last)
 {
-    priority_queue <state, vector<state>, greater<state>> q;
+    queue <state> q;
 
     pt currPos = checkpoints[start];
 
@@ -67,7 +60,7 @@ int dijkstra(int start, vector <vector <char>> &grid, vector <pt> &checkpoints, 
 
     while (!q.empty())
     {
-        state curr = q.top();
+        state curr = q.front();
         q.pop();
 
         int newGoal = curr.goal;
@@ -93,13 +86,10 @@ int dijkstra(int start, vector <vector <char>> &grid, vector <pt> &checkpoints, 
 
             state newState = {newPoint.x, newPoint.y, newDyDx.x, newDyDx.y, newGoal, newT};
 
-            if (isValid(newPoint, grid))
+            if (isValid(newPoint, grid) and d[newPoint.x][newPoint.y][newGoal].count(newDyDx) == 0)
             {
-                if (d[newPoint.x][newPoint.y][newGoal].count(newDyDx) == 0 or newT < d[newPoint.x][newPoint.y][newGoal][newDyDx])
-                {
-                    d[newPoint.x][newPoint.y][newGoal][newDyDx] = newT;
-                    q.push(newState);
-                }
+                d[newPoint.x][newPoint.y][newGoal][newDyDx] = newT;
+                q.push(newState);
             }
         }
     }
@@ -109,6 +99,9 @@ int dijkstra(int start, vector <vector <char>> &grid, vector <pt> &checkpoints, 
 
 int main()
 {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
     while(cin>>W>>H)
     {
         if (W == 0 and H == 0)
@@ -139,7 +132,7 @@ int main()
             }
         }
 
-        int sol = dijkstra(0, grid, checkpoints, maxCheckpoint);
+        int sol = bfs(0, grid, checkpoints, maxCheckpoint);
 
         cout<<sol<<'\n';
     }
