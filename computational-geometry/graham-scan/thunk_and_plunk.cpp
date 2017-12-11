@@ -1,4 +1,4 @@
-//graham scan, vector calculations: addition/norm/perpendicular, polygon containment
+//graham scan, trigonometry, polygon containment
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=3958
 //2011 Mid-Atlantic Regional
 
