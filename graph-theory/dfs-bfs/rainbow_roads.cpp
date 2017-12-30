@@ -1,4 +1,4 @@
-//traversal
+//dfs traversal
 //https://open.kattis.com/problems/rainbowroads (2017 Mid-Atlantic Regional)
 
 #include <iostream>
