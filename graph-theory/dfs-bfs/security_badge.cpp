@@ -1,4 +1,4 @@
-//traversal, sorting
+//dfs traversal, interval decomposition
 //https://open.kattis.com/problems/securitybadge (2017 Mid-Atlantic Regional)
 
 #include <set>
