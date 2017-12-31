@@ -1,8 +1,8 @@
-#include <iostream>
-//computational geometry (trigonometry), permutations
+//trigonometry, permutations
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=5972
 //2016 Mid-Atlantic Regional
 
+#include <iostream>
 #include <vector>
 #include <cmath>
 #include <algorithm>
