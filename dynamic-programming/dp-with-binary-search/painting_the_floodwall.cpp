@@ -1,4 +1,4 @@
-//longest increasing subsequence, binary search
+//dynamic programming, binary search
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&category=&problem=5974
 //2016 Mid-Atlantic Regional
 
