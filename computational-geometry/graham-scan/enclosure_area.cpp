@@ -1,4 +1,4 @@
-//dynamic convex hull, prefix shoelace, binary search, convex polygon containment
+//dynamic convex hull, shoelace theorem, prefix sum, binary search, convex polygon containment
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&category=757&problem=5971
 //2016 Mid-Atlantic Regional
 
