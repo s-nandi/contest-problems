@@ -1,4 +1,4 @@
-//segment tree, find kth >=, prefix sums for table
+//segment tree, find kth above/below threshold, prefix sums for table
 
 #include <iostream>
 #include <vector>
