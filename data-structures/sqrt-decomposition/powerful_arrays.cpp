@@ -4,23 +4,37 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
-#include <map>
 #include <algorithm>
 
 using namespace std;
 
 #define ll long long
 
+int bucket_size;
+
 struct query
 {
     int left;
     int right;
     int index;
-    query(int l, int r, int i)
+
+    bool operator < (query o) const
     {
-        left = l;
-        right = r;
-        index = i;
+        if (left / bucket_size != o.left / bucket_size)
+        {
+            return left < o.left;
+        }
+        else
+        {
+            if ((left / bucket_size) % 2 == 0)
+            {
+                return right < o.right;
+            }
+            else
+            {
+                return o.right < right;
+            }
+        }
     }
 };
 
@@ -29,7 +43,6 @@ ll add_element(ll element, vector <int> &counts, ll curr_sum)
     int elem_count = counts[element];
     counts[element]++;
 
-
     return curr_sum + element * ((elem_count + 1) * (elem_count + 1) - elem_count * elem_count);
 }
 
@@ -37,7 +50,6 @@ ll remove_element(ll element, vector <int> &counts, ll curr_sum)
 {
     int elem_count = counts[element];
     counts[element]--;
-
 
     return curr_sum - element* (elem_count*elem_count - (elem_count - 1) * (elem_count - 1));
 }
@@ -61,32 +73,17 @@ int main()
     vector <query> queries;
     vector <int> element_counts(maxn + 1, 0);
 
-
-
     for (int i = 0; i < q; i++)
     {
         cin>>l>>r;
         --l;
         --r;
-
-        query input_query(l, r, i);
-        queries.push_back(input_query);
+        queries.push_back({l, r, i});
     }
 
-    int bucket_size = int (sqrt(n) + .5);
+    bucket_size = int (sqrt(n) + .5);
 
-    sort(queries.begin(), queries.end(),
-         [bucket_size](query a, query b)
-         {
-            if (a.left / bucket_size == b.left / bucket_size)
-            {
-                return a.right < b.right;
-            }
-            else
-            {
-                return a.left < b.left;
-            }
-         });
+    sort(queries.begin(), queries.end());
 
 
     int left_pointer = 0;
