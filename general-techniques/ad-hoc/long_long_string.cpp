@@ -1,4 +1,4 @@
-//interval processing
+//interval processing (inefficient rope)
 //https://open.kattis.com/problems/longlongstrings (2017 Mid-Atlantic Regional)
 
 #include <iostream>
