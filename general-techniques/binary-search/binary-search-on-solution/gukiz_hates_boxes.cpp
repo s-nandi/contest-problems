@@ -1,4 +1,4 @@
-//binary search
+//binary search on solution (simulation)
 //http://codeforces.com/problemset/problem/551/C
 
 #include <iostream>
