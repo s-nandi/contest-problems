@@ -1,4 +1,4 @@
-//SCC (Kosaraju), 2-SAT, binary search
+//SCC (Kosaraju), 2-SAT, binary search on solution
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=5719
 //2016 Mid-Atlantic Regional
 
