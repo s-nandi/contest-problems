@@ -1,4 +1,4 @@
-//line sweep (parallel)
+//line sweep (parallel - times and events)
 //http://codeforces.com/contest/912/problem/C
 
 #include <iostream>
