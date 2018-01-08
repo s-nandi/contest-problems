@@ -1,4 +1,4 @@
-//edit distance, dijkstra (grid), dynamic programming
+//dynamic programming (grid), dijkstra, edit distance 
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&category=757&page=show_problem&problem=5715
 //2016 Mid-Atlantic Regional
 
