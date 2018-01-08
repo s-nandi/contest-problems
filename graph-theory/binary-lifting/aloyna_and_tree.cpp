@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <vector>
-#include <map>
 
 using namespace std;
 
@@ -11,127 +10,124 @@ using namespace std;
 
 struct edge
 {
-    int a;
-    int b;
-    bool operator < (edge o) const
-    {
-        return a < o.a or (a == o.a and b < o.b);
-    }
-
+    int i;
+    ll w;
 };
 
-vector <ll> val;
-vector <vector<int> > graph;
-map <edge, ll> weight;
+vector <ll> values, distances;
+vector <vector<edge>> graph;
+vector <vector<int>> binaryLift;
 
-vector <ll> distArr;
+vector <int> prefixSum;
+vector <int> result;
 
-vector <vector<int> > binLift;
-vector <int> pow2;
+int ln;
 
-void precompute(int n)
+int logn(int n)
 {
-    int curr = 1;
-    while(curr <= n)
+    int counter = 0;
+    while (n > 0)
     {
-        pow2.push_back(curr);
-        curr *= 2;
+        n >>= 1;
+        counter++;
+    }
+    return counter;
+}
+
+void construct(int curr, ll dist, int currDepth)
+{
+    distances[curr] = dist;
+
+    for (int i = 1; (1 << i) <= currDepth; i++)
+    {
+        binaryLift[curr][i] = binaryLift[binaryLift[curr][i - 1]][i - 1];
+    }
+
+    for (edge e: graph[curr])
+    {
+        int neighbor = e.i;
+        ll weight = e.w;
+        construct(neighbor, dist + weight, currDepth + 1);
     }
 }
 
-
-void dfs(int curr, ll dist, int currDepth)
+void solve(int node)
 {
-    distArr[curr] = dist;
-
-    for (int i = 1; i < pow2.size(); i++)
-    {
-        if (pow2[i] > currDepth) break;
-        binLift[curr][i] = binLift[binLift[curr][i - 1]][i - 1];
-    }
-
-    for (int neighbor: graph[curr])
-    {
-        dfs(neighbor, dist + weight[ {curr, neighbor}], currDepth + 1);
-    }
-}
-
-void solve(int node, vector <int> &sol)
-{
-    ll lb = distArr[node] - val[node];
+    ll lowerBound = distances[node] - values[node];
 
     int curr = node;
-
-    for (int i = pow2.size() - 1; i >= 0; i--)
+    for (int i = ln - 1; i >= 0; i--)
     {
-        if (binLift[curr][i] == -1 or distArr[binLift[curr][i]] < lb)
+        if (binaryLift[curr][i] != -1 and distances[binaryLift[curr][i]] >= lowerBound)
         {
-            continue;
+            curr = binaryLift[curr][i];
         }
-
-        curr = binLift[curr][i];
     }
-    if (curr != node and distArr[curr] >= lb)
+
+    if (distances[curr] >= lowerBound)
     {
-        sol[curr]--;
-        sol[node]++;
+        prefixSum[curr]--;
+        prefixSum[node]++;
     }
 }
 
-int push(int curr, vector <int> &sol, vector <int> &res)
+int push(int curr)
 {
     int neighborSum = 0;
 
-    for (int neighbor: graph[curr])
+    for (edge e: graph[curr])
     {
-        neighborSum += push(neighbor, sol, res);
+        int neighbor = e.i;
+        neighborSum += push(neighbor);
     }
-    res[curr] = neighborSum;
+    result[curr] = neighborSum;
 
-    return neighborSum + sol[curr];
+    return result[curr] + prefixSum[curr];
 }
 
 int main()
 {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
+
     int n;
     cin>>n;
 
-    precompute(n);
-
-    val.resize(n);
+    values.resize(n);
+    distances.resize(n);
     graph.resize(n);
-    distArr.resize(n);
 
-    binLift.resize(n, vector <int>(pow2.size(), -1));
+    ln = logn(n) + 2;
 
+    binaryLift.resize(n, vector <int>(ln, -1));
 
     for (int i = 0; i < n; i++)
     {
-        cin>>val[i];
+        cin>>values[i];
     }
+
     for (int i = 1; i < n; i++)
     {
         int p;
         ll w;
         cin>>p>>w;
         --p;
-        graph[p].push_back(i);
-        weight[ {p, i}] = w;
-        binLift[i][0] = p;
+
+        graph[p].push_back({i, w});
+        binaryLift[i][0] = p;
     }
 
-    dfs(0, 0, 0);
+    construct(0, 0, 0);
 
+    prefixSum.resize(n);
+    result.resize(n);
 
-    vector <int> prefixSolution(n);
     for (int i = 0; i < n; i++)
-        solve(i, prefixSolution);
+    {
+        solve(i);
+    }
 
-
-    vector <int> result(n);
-    push(0, prefixSolution, result);
+    push(0);
 
     for (int res: result)
     {
