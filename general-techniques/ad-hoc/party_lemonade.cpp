@@ -1,4 +1,4 @@
-//bit manipulation
+//bitmask manipulation, trivial dp
 //http://codeforces.com/contest/913/problem/C
 
 #include <iostream>
