@@ -1,4 +1,4 @@
-//network flow (edmond-karp), bfs, sieve factorization
+//network flow (edmond-karp), sieve factorization
 //http://codeforces.com/contest/498/problem/C
 
 #include <iostream>
