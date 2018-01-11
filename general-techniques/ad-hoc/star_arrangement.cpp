@@ -1,4 +1,4 @@
-//ad-hoc, math
+//math (divisibility checking)
 //https://open.kattis.com/problems/stararrangements (2017 Mid-Atlantic Regional)
 
 #include <iostream>
