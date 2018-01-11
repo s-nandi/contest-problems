@@ -1,4 +1,4 @@
-//network flow (edmond-karp, space-efficient), vertex capacities
+//network flow (edmond-karp, space-efficient representation), vertex capacities
 //https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=2375
 
 #include <iostream>
