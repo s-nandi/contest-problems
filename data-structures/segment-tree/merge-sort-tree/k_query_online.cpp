@@ -1,4 +1,4 @@
-//merge sort tree (static)
+//merge sort tree (static), find kth element in interval (online)
 //http://www.spoj.com/problems/KQUERYO/
 
 #include <iostream>
