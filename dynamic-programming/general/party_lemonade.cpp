@@ -1,4 +1,4 @@
-//bitmask manipulation, trivial dp, greedy
+//bitmasks, dynamic programming, greedy
 //http://codeforces.com/contest/913/problem/C
 
 #include <iostream>
