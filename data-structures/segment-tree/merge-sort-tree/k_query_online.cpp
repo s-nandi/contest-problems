@@ -1,4 +1,4 @@
-//merge sort tree
+//merge sort tree (static)
 //http://www.spoj.com/problems/KQUERYO/
 
 #include <iostream>
