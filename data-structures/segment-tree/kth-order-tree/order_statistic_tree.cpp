@@ -22,7 +22,7 @@ struct segmentTree
     void modify(int p, int val)
     {
         p += sz;
-        if (elements[p] + val >= 0 and elements[p] + val <= 1) //remove if multiset is wanted
+        if (elements[p] + val >= 0 and elements[p] + val <= 1)
         {
             elements[p] += val;
         }
@@ -83,11 +83,11 @@ struct query
     int val;
 };
 
-vector <int> numbers;
+vector <int> sorted;
 
 int mapping(int i)
 {
-    return lower_bound(numbers.begin(), numbers.end(), i) - numbers.begin();
+    return lower_bound(sorted.begin(), sorted.end(), i) - sorted.begin();
 }
 
 int main()
@@ -98,21 +98,19 @@ int main()
     int q;
     cin>>q;
 
-    numbers.resize(q);
+    sorted.resize(q);
     vector <query> queries(q);
+    segmentTree st(q);
+
     for (int i = 0; i < q; i++)
     {
         char t;
         int v;
         cin>>t>>v;
         queries[i] = {t, v};
-        numbers[i] = v;
+        sorted[i] = v;
     }
-
-    sort(numbers.begin(), numbers.end());
-    numbers.erase(unique(numbers.begin(), numbers.end()), numbers.end());
-
-    segmentTree st(numbers.size());
+    sort(sorted.begin(), sorted.end());
 
     for (query qu: queries)
     {
@@ -139,7 +137,7 @@ int main()
             }
             else
             {
-                cout<<numbers[res]<<'\n';
+                cout<<sorted[res]<<'\n';
             }
         }
     }
