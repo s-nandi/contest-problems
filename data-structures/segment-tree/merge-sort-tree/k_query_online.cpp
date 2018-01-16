@@ -23,41 +23,12 @@ struct segmentTree
         elements[pos + sz] = {val};
     }
 
-    vector <int> mergeVectors(vector <int> &a, vector <int> &b)
-    {
-        vector <int> merged;
-
-        int aPointer = 0, bPointer = 0;
-        while (aPointer < a.size() and bPointer < b.size())
-        {
-            if(a[aPointer] < b[bPointer])
-            {
-                merged.push_back(a[aPointer++]);
-            }
-            else
-            {
-                merged.push_back(b[bPointer++]);
-            }
-        }
-
-        while (aPointer < a.size())
-        {
-            merged.push_back(a[aPointer++]);
-        }
-
-        while (bPointer < b.size())
-        {
-            merged.push_back(b[bPointer++]);
-        }
-
-        return merged;
-    }
-
     void build()
     {
         for (int i = sz - 1; i >= 1; i--)
         {
-            elements[i] = mergeVectors(elements[i << 1], elements[i << 1 | 1]);
+            elements[i].resize(elements[i << 1].size() + elements[i << 1 | 1].size());
+            merge(elements[i << 1].begin(), elements[i << 1].end(), elements[i << 1 | 1].begin(), elements[i << 1 | 1].end(), elements[i].begin());
         }
     }
 
