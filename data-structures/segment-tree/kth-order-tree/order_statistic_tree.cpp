@@ -1,4 +1,4 @@
-//k-th order tree, finding k-th element in set, finding order of element in set
+//k-th order tree, coordinate compression, finding k-th element in set, finding order of element in set
 //http://www.spoj.com/problems/ORDERSET/
 
 #include <iostream>
