@@ -1,4 +1,5 @@
 //segment tree, finding # of elements below threshold queries, point increment updates
+//http://www.spoj.com/problems/INVCNT/
 
 #include <iostream>
 #include <vector>
