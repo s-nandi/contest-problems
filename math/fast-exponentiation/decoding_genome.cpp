@@ -11,23 +11,15 @@ using namespace std;
 
 struct matrix
 {
-    vector <vector<ll>> val;
+    vector <vector<ll>> values;
     int h;
     int w;
 
-    matrix(int height, int width, int init = 0, bool isIdentity = false)
+    matrix(int height, int width, int v = 0)
     {
         h = height;
         w = width;
-        val.resize(h, vector<ll>(w, init));
-
-        if (isIdentity)
-        {
-            for (int i = 0; i < h; i++)
-            {
-                val[i][i] = 1;
-            }
-         }
+        values.resize(h, vector<ll>(w, v));
     }
 
     matrix operator * (matrix o)
@@ -40,9 +32,9 @@ struct matrix
                 ll sum = 0;
                 for (int k = 0; k < w; k++)
                 {
-                    sum = (sum + (val[i][k] * o.val[k][j]) % MOD) % MOD;
+                    sum = (sum + (values[i][k] * o.values[k][j]) % MOD) % MOD;
                 }
-                res.val[i][j] = sum;
+                res.values[i][j] = sum;
             }
         }
         return res;
@@ -50,29 +42,26 @@ struct matrix
 
     matrix pow(ll p)
     {
-        matrix acc(h, w, 0, true);
+        matrix acc(h, w);
+        for (int i = 0; i < w; i++)
+        {
+            acc.values[i][i] = 1;
+        }
+
         matrix res = *this;
 
-        if (p == 0)
+        while (p)
         {
-            return acc;
-        }
-        while (p > 1)
-        {
-            if (p % 2 == 0)
-            {
-                res = res * res;
-                p /= 2;
-            }
-            else
+            if (p & 1)
             {
                 acc = acc * res;
-                res = res * res;
-                p =  (p - 1) / 2;
             }
+
+            res = res * res;
+            p /= 2;
         }
 
-        return acc * res;
+        return acc;
     }
 };
 
@@ -99,7 +88,7 @@ int main()
     {
         char a, b;
         cin>>a>>b;
-        state.val[mapping(a)][mapping(b)] = 0;
+        state.values[mapping(a)][mapping(b)] = 0;
     }
 
     matrix ones(m, 1, 1);
@@ -108,7 +97,7 @@ int main()
     ll sol = 0;
     for (int i = 0; i < m; i++)
     {
-        sol = (res.val[i][0] + sol) % MOD;
+        sol = (res.values[i][0] + sol) % MOD;
     }
     cout<<sol<<'\n';
 
