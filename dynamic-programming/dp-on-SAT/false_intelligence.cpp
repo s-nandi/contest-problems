@@ -1,4 +1,4 @@
-//bfs, satisfiability, hashing
+//dp on satisfiability, bfs, hashing
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&page=show_problem&problem=5948
 //2016 South Pacific Regional
 
@@ -9,10 +9,10 @@
 
 using namespace std;
 
-int BIT_AND[3][3] = {{0, 0, 0}, {0, 1, 1}, {0, 1, 2}};
-int BIT_OR[3][3] = {{0, 1, 2}, {1, 1, 2}, {2, 2, 2}};
-int BIT_IMPLIES[3][3] = {{2, 2, 2}, {1, 2, 2}, {0, 1, 2}};
-int BIT_EQUALS[3][3] = {{2, 0, 0}, {0, 2, 0}, {0, 0, 2}};
+vector <vector<int>> BIT_AND = {{0, 0, 0}, {0, 1, 1}, {0, 1, 2}};
+vector <vector<int>> BIT_OR = {{0, 1, 2}, {1, 1, 2}, {2, 2, 2}};
+vector <vector<int>> BIT_IMPLIES = {{2, 2, 2}, {1, 2, 2}, {0, 1, 2}};
+vector <vector<int>> BIT_EQUALS = {{2, 0, 0}, {0, 2, 0}, {0, 0, 2}};
 
 int XVAL[9] = {0, 0, 0, 1, 1, 1, 2, 2, 2};
 int YVAL[9] = {0, 1, 2, 0, 1, 2, 0, 1, 2};
@@ -38,7 +38,7 @@ struct expression
         return val;
     }
 
-    expression OPERATION(int BIT_OP[3][3], expression &o)
+    expression OPERATION(vector <vector<int>> &BIT_OP, expression &o)
     {
         expression res;
         for (int i = 0; i < 9; i++)
@@ -48,25 +48,10 @@ struct expression
         return res;
     }
 
-    expression AND (expression &o)
-    {
-        return OPERATION(BIT_AND, o);
-    }
-
-    expression OR (expression &o)
-    {
-        return OPERATION(BIT_OR, o);
-    }
-
-    expression IMPLIES (expression &o)
-    {
-        return OPERATION(BIT_IMPLIES, o);
-    }
-
-    expression EQUALS (expression &o)
-    {
-       return OPERATION(BIT_EQUALS, o);
-    }
+    expression AND (expression &o) { return OPERATION(BIT_AND, o); }
+    expression OR (expression &o) { return OPERATION(BIT_OR, o); }
+    expression IMPLIES (expression &o) { return OPERATION(BIT_IMPLIES, o); }
+    expression EQUALS (expression &o) { return OPERATION(BIT_EQUALS, o); }
 };
 
 vector <expression> setExpressions;
@@ -85,9 +70,10 @@ void addExpression(expression e)
 
 void bfs()
 {
-    expression X; memcpy(X.bits, XVAL, sizeof(X.bits));
+    expression X, Y;
+    memcpy(X.bits, XVAL, sizeof(XVAL));
+    memcpy(Y.bits, YVAL, sizeof(YVAL));
     addExpression(X);
-    expression Y; memcpy(Y.bits, YVAL, sizeof(Y.bits));
     addExpression(Y);
 
     while(!q.empty())
