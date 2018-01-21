@@ -1,9 +1,10 @@
-//dijkstra, satisfiability
+//dp on satisfiability, dijkstra, bitmask
 //http://codeforces.com/contest/913/problem/E
 
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <tuple>
 
 using namespace std;
 
@@ -20,9 +21,7 @@ struct expression
     bool operator > (expression o) const
     {
         if (length() != o.length()) return length() > o.length();
-        if (s != o.s) return s > o.s;
-        if (type != o.type) return type > o.type;
-        return mask > o.mask;
+        else return tie(s, type, mask) > tie(o.s, o.type, o.mask);
     }
 
     bool operator < (expression o) const
@@ -37,16 +36,16 @@ struct expression
     expression MOVEUP (){ return {s, type + 1, mask}; }
 };
 
-vector <vector<expression>> distances(3, vector<expression>(1 << 8, {"", -1, -1}));
+vector <vector<expression>> dp(3, vector<expression>(1 << 8, {"", -1, -1}));
 vector <expression> marked[3];
 
 priority_queue <expression, vector<expression>, greater<expression>> pq;
 
 void addExpression(expression e)
 {
-    if (e < distances[e.type][e.mask])
+    if (e < dp[e.type][e.mask])
     {
-        distances[e.type][e.mask] = e;
+        dp[e.type][e.mask] = e;
         pq.push(e);
     }
 }
@@ -72,7 +71,7 @@ void dijkstra()
         expression curr = pq.top();
         pq.pop();
 
-        if (curr > distances[curr.type][curr.mask]) continue;
+        if (curr > dp[curr.type][curr.mask]) continue;
         marked[curr.type].push_back(curr);
 
         if (curr.type == 0) //F
@@ -120,7 +119,7 @@ int main()
     {
         string str;
         cin>>str;
-        cout<<distances[2][mapping(str)].s<<'\n';
+        cout<<dp[2][mapping(str)].s<<'\n';
     }
 
     return 0;
