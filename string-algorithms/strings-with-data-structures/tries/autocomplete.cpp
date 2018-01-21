@@ -2,26 +2,19 @@
 //http://codeforces.com/gym/100579
 
 #include <iostream>
-#include <vector>
+#include <cstring>
 
 using namespace std;
 
-struct node
-{
-    int prefixCount = 0;
-};
-
 struct trie
 {
-    vector <vector<int>> elements;
-    vector <node> counts;
+    int elements[1000005][26];
     int numNodes;
 
-    trie(int s = 1000005)
+    trie()
     {
         numNodes = 0;
-        counts.resize(1);
-        elements.resize(s, vector<int>(26, -1));
+        memset(elements, -1, sizeof(elements));
     }
 
     int addWord(string &s)
@@ -35,11 +28,9 @@ struct trie
             if (elements[curr][c - 'a'] == -1)
             {
                 elements[curr][c - 'a'] = ++numNodes;
-                counts.push_back(node());
                 foundBranch = true;
             }
             curr = elements[curr][c - 'a'];
-            counts[curr].prefixCount++;
         }
         return cost;
     }
