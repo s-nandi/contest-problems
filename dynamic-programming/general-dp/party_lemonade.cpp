@@ -1,4 +1,4 @@
-//bitmasks, dynamic programming, greedy
+//dynamic programming, bitmasks, greedy
 //http://codeforces.com/contest/913/problem/C
 
 #include <iostream>
