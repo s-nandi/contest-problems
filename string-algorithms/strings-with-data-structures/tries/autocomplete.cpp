@@ -1,4 +1,4 @@
-//trie
+//tries, querying # of words with given prefix
 //http://codeforces.com/gym/100579
 
 #include <iostream>
