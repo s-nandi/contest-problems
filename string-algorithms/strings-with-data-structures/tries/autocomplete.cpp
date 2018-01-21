@@ -3,72 +3,69 @@
 
 #include <iostream>
 #include <vector>
-#include <map>
-#include <utility>
 
 using namespace std;
 
-struct counts{
-    int pc = 0;
+struct node
+{
+    int prefixCount = 0;
 };
 
-void addWord(map <pair <char, int>, int> &t, string s, int &nn, map <int, counts> &tc)
+struct trie
 {
-    int v = 0;
-    for (char ch: s)
-    {
-        if (t.count({ch, v}) == 0)
-        {
-            t[{ch, v}] = ++nn;
-        }
-        v = t[{ch, v}];
-        tc[v].pc += 1;
-    }
-}
+    vector <vector<int>> elements;
+    vector <node> counts;
+    int numNodes;
 
-int searchTill(map <pair<char, int>, int> &t, string s, map <int, counts> &tc)
-{
-    int v = 0;
-    int counter = 0;
-    for (char ch: s)
+    trie(int s = 1000005)
     {
-        if (tc[v].pc == 1)
-        {
-            return counter;
-        }
-        v = t[{ch, v}];
-        counter += 1;
+        numNodes = 0;
+        counts.resize(1);
+        elements.resize(s, vector<int>(26, -1));
     }
-    return counter;
-}
+
+    int addWord(string &s)
+    {
+        int curr = 0;
+        int cost = 0;
+        bool foundBranch = false;
+        for (char c: s)
+        {
+            if (!foundBranch) cost++;
+            if (elements[curr][c - 'a'] == -1)
+            {
+                elements[curr][c - 'a'] = ++numNodes;
+                counts.push_back(node());
+                foundBranch = true;
+            }
+            curr = elements[curr][c - 'a'];
+            counts[curr].prefixCount++;
+        }
+        return cost;
+    }
+};
 
 int main()
 {
     ios::sync_with_stdio(0);
     cin.tie(0);
 
-    int t, n;
-    cin>>t;
-    for (int loop = 0; loop < t; loop++)
+    int tests, n;
+    cin>>tests;
+    for (int loop = 1; loop <= tests; loop++)
     {
         cin>>n;
-        string word;
-        map <pair<char, int>, int> trie;
-        map <int, counts> totalCounts;
-        int numNodes = 0;
+
+        trie tr;
         int ans = 0;
-        int diff;
         for (int i = 0; i < n; i++)
         {
+            string word;
             cin>>word;
-            addWord(trie, word, numNodes, totalCounts);
-            diff=searchTill(trie, word, totalCounts);
-            ans += diff;
+            ans += tr.addWord(word);
         }
-
-        cout<<"Case #"<<loop + 1<<": "<<ans<<'\n';
+        cout<<"Case #"<<loop<<": "<<ans<<'\n';
     }
-
 
     return 0;
 }
