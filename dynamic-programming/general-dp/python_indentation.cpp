@@ -1,4 +1,4 @@
-//dynamic programming, prefix sums
+//dynamic programming, prefix sum
 //http://codeforces.com/contest/909/problem/C
 
 #include <iostream>
