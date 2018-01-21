@@ -1,4 +1,4 @@
-//dynamic programming (decision steps), string processing
+//dynamic programming, string processing
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=3956
 //2011 Mid-Atlantic Regional
 
