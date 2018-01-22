@@ -7,45 +7,40 @@
 using namespace std;
 
 #define ll long long
-#define LN 20
 
 struct edge
 {
     int to; ll weight;
 };
 
+vector <vector<edge>> graph;
+
 struct binaryLift
 {
-    int sz;
+    int sz, ln;
     vector <vector<int>> table;
-    vector <vector<edge>> graph;
-
     vector <int> values, results, prefixSums; vector <ll> distances;
 
     binaryLift(int s)
     {
         sz = s;
-        table.resize(sz, vector<int>(LN, -1));
-        graph.resize(s);
-
+        ln = 0;
+        while (1 << ln < sz) ln++;
+        table.resize(sz, vector<int>(ln, -1));
         distances.resize(sz); values.resize(sz); results.resize(sz); prefixSums.resize(sz);
-    }
-
-    void add_edge(int a, int b, ll w)
-    {
-        graph[a].push_back({b, w});
-        table[b][0] = a;
     }
 
     void build(int curr, ll currDistance = 0)
     {
         distances[curr] = currDistance;
-        for (int i = 1; i < LN; i++)
+
+        for (int i = 1; i < ln; i++)
         {
             table[curr][i] = table[curr][i - 1] != -1 ? table[table[curr][i - 1]][i - 1] : -1;
         }
         for (edge e: graph[curr])
         {
+            table[e.to][0] = curr;
             build(e.to, currDistance + e.weight);
         }
     }
@@ -65,7 +60,7 @@ struct binaryLift
         for (int node = 0; node < sz; node++)
         {
             int curr = node;
-            for (int i = LN - 1; i >= 0; i--)
+            for (int i = ln - 1; i >= 0; i--)
             {
                 if (table[curr][i] != -1 and distances[table[curr][i]] >= distances[node] - values[node])
                 {
@@ -88,6 +83,7 @@ int main()
     cin>>n;
 
     binaryLift bl(n);
+    graph.resize(n);
 
     for (int i = 0; i < n; i++)
     {
@@ -98,7 +94,7 @@ int main()
     {
         int p; ll w;
         cin>>p>>w;
-        bl.add_edge(--p, i, w);
+        graph[--p].push_back({i, w});
     }
     bl.build(0);
     bl.solve();
