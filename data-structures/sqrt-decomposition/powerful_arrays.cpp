@@ -2,15 +2,15 @@
 //http://codeforces.com/problemset/problem/86/D
 
 #include <iostream>
-#include <math.h>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
 #define ll long long
 
-int bucket_size;
+const int bucket_size = 447;
 
 struct query
 {
@@ -81,10 +81,7 @@ int main()
         queries.push_back({l, r, i});
     }
 
-    bucket_size = int (sqrt(n) + .5);
-
     sort(queries.begin(), queries.end());
-
 
     int left_pointer = 0;
     int right_pointer = 0;
