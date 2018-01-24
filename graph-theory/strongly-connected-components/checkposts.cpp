@@ -1,158 +1,132 @@
-//SCC (Kosaraju)
-//http://codeforces.com/contest/427/problem/C
+//strongly connected components (kosaraju)
+//http://codeforces.com/problemset/problem/427/C
 
-#include <stack>
-#include <vector>
 #include <iostream>
 #include <vector>
-#include <algorithm>
-#include <map>
-#include <utility>
+#include <stack>
 
+#define INF 123123123123123
 #define MOD 1000000007
 #define ll long long
 
 using namespace std;
 
+ll minimumCost, numberOfWays;
+vector <int> costs;
+
+vector <vector<int>> graph, transpose;
 stack <int> order;
-vector <int> visited;
+vector <int> visited, components;
+int scc_sz = 0;
 
-vector <int> components;
-int curr_component = 0;
-
-void dfsOrder(vector <vector<int>> &graph, int curr)
+void ordering(int curr)
 {
     visited[curr] = 1;
-
     for (int neighbor: graph[curr])
     {
         if (!visited[neighbor])
         {
-            dfsOrder(graph, neighbor);
+            ordering(neighbor);
         }
     }
-
     order.push(curr);
 }
 
-void dfsReverse(vector <vector<int>> &graph, int curr)
+void categorize(int curr)
 {
     visited[curr] = 0;
-    components[curr] = curr_component;
-
-    for (int neighbor: graph[curr])
+    components[curr] = scc_sz;
+    for (int neighbor: transpose[curr])
     {
         if (visited[neighbor])
         {
-            dfsReverse(graph, neighbor);
+            categorize(neighbor);
         }
     }
 }
 
-
-void scc(vector <vector<int>> &g, vector <vector<int>> &tg)
+void kosarajuSCC()
 {
-    visited.resize(g.size(), 0);
-    components.resize(g.size(), -1);
+    int n = graph.size();
+    visited.resize(n, 0);
+    components.resize(n, -1);
 
-    for (int i = 0; i < g.size(); i++)
+    for (int i = 0; i < n; i++)
     {
         if (visited[i]) continue;
 
-        dfsOrder(g, i);
+        ordering(i);
     }
 
     while (!order.empty())
     {
-          int start = order.top();
+          int curr = order.top();
           order.pop();
 
-          if (!visited[start]) continue;
+          if (!visited[curr]) continue;
 
-          dfsReverse(tg, start);
-          curr_component++;
+          categorize(curr);
+          scc_sz++;
     }
 }
 
-
-pair <ll, ll> check(vector <vector<int>> &graph, vector <int> &elements)
+void solve()
 {
-    int n = graph.size();
-    vector <vector<int>> transpose(n, vector<int>());
+    kosarajuSCC();
 
+    vector <ll> cheapest(scc_sz, INF), numChoices(scc_sz);
     for (int i = 0; i < graph.size(); i++)
     {
-        for(int j: graph[i])
+        int ind = components[i];
+        if (costs[i] < cheapest[ind])
         {
-            transpose[j].push_back(i);
+            cheapest[ind] = costs[i];
+            numChoices[ind] = 1;
+        }
+        else if(costs[i] == cheapest[ind])
+        {
+            numChoices[ind]++;
         }
     }
 
-    scc(graph, transpose);
-
-    map <int, ll> leastCost;
-    map <int, ll> numWays;
-    for (int i = 0; i < elements.size(); i++)
+    minimumCost = 0, numberOfWays = 1;
+    for (int i = 0; i < scc_sz; i++)
     {
-        ll val = elements[i];
-        ll ind = components[i];
-        if (leastCost.count(ind) == 0)
-        {
-            leastCost[ind] = val;
-            numWays[ind] = 1;
-        }
-        else if (val < leastCost[ind])
-        {
-            leastCost[ind] = val;
-            numWays[ind] = 1;
-        }
-        else if(val == leastCost[ind])
-        {
-            numWays[ind]++;
-        }
+        minimumCost += cheapest[i];
+        numberOfWays = (numberOfWays * numChoices[i]) % MOD;
     }
-
-    pair <ll, ll> res;
-    ll cost, ways;
-    cost = 0;
-    ways = 1;
-    for (auto elem: leastCost)
-    {
-        int ind = elem.first;
-        ll minCost = elem.second;
-        ll waysThis = numWays[ind];
-
-        cost += minCost;
-        ways = (waysThis * ways) % MOD;
-    }
-
-    res.first = cost;
-    res.second = ways;
-    return res;
 }
 
 
 int main()
 {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
     int n;
     cin>>n;
-    vector <int> checks(n);
+
+    graph.resize(n);
+    transpose.resize(n);
+    costs.resize(n);
+
     for (int i = 0; i < n; i++)
     {
-        cin>>checks[i];
-    }
-    vector <vector<int>> graph(n, vector<int>());
-    int m;
-    cin>>m;
-    for (int i = 0; i <m; i++)
-    {
-        int from, to;
-        cin>>from>>to;
-        --from;
-        --to;
-        graph[from].push_back(to);
+        cin>>costs[i];
     }
 
-    pair<ll, ll>  res = check(graph, checks);
-    cout<<res.first<<" "<<res.second<<endl;
+    int m;
+    cin>>m;
+
+    for (int i = 0; i < m; i++)
+    {
+        int a, b;
+        cin>>a>>b;
+        --a; --b;
+        graph[a].push_back(b);
+        transpose[b].push_back(a);
+    }
+
+    solve();
+    cout<<minimumCost<<" "<<numberOfWays<<'\n';
 }
