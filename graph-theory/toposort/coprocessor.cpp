@@ -1,4 +1,4 @@
-//toposort(indegree), bfs
+//toposort(indegree), bfs, greedy
 //http://codeforces.com/contest/909/problem/E
 
 #include <iostream>
@@ -7,7 +7,8 @@
 
 using namespace std;
 
-vector <int> e;
+vector <int> type;
+
 vector <vector<int>> graph;
 vector <int> inDegree;
 
@@ -20,7 +21,7 @@ int solve()
     {
         if (inDegree[i] == 0)
         {
-            q[e[i]].push(i);
+            q[type[i]].push(i);
         }
     }
 
@@ -37,15 +38,15 @@ int solve()
 
             while (!q[i].empty())
             {
-                int top = q[i].front();
+                int curr = q[i].front();
                 q[i].pop();
 
-                for (int neighbor: graph[top])
+                for (int neighbor: graph[curr])
                 {
                     inDegree[neighbor]--;
                     if (inDegree[neighbor] == 0)
                     {
-                        q[e[neighbor]].push(neighbor);
+                        q[type[neighbor]].push(neighbor);
                     }
                 }
             }
@@ -60,16 +61,15 @@ int main()
 {
     int n, m;
     cin>>n>>m;
-    
-    e.resize(n);
+
+    type.resize(n);
+    graph.resize(n);
+    inDegree.resize(n);
 
     for (int i = 0; i < n; i++)
     {
-       cin>>e[i];
+       cin>>type[i];
     }
-
-    graph.resize(n);
-    inDegree.resize(n);
 
     for (int i = 0; i < m; i++)
     {
