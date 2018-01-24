@@ -75,85 +75,70 @@ vector <vector<edge>> graph;
 
 struct heavyLightDecomposition
 {
-    int sz;
+    int sz, timer = 0;
     bool edgeWeighted;
-    vector <int> parent, heavy, depth, root, position;
+    vector <int> parent, sizes, root, value, position, endPosition;
     segmentTree st;
 
     heavyLightDecomposition(int s, bool e)
     {
         sz = s;
         st.initialize(sz);
-        parent.resize(sz, -1); heavy.resize(sz, -1); depth.resize(sz); root.resize(sz); position.resize(sz);
+        parent.resize(sz, -1), sizes.resize(sz, -1), root.resize(sz), value.resize(sz), position.resize(sz), endPosition.resize(sz);
         edgeWeighted = e;
     }
 
-    int precompute(int curr)
+    void reorder(int curr)
     {
-        int subtree = 1, maxChild = -1;
-        for (edge e: graph[curr])
+        sizes[curr] = 1;
+        for (edge &e: graph[curr]) if (e.to != parent[curr])
         {
-            if (e.to == parent[curr]) continue;
-
-            parent[e.to] = curr;
-            depth[e.to] = depth[curr] + 1;
-            int childSize = precompute(e.to);
-            if (childSize > maxChild)
+            parent[e.to] = curr, value[e.to] = e.weight;
+            reorder(e.to);
+            sizes[curr] += sizes[e.to];
+            if (sizes[e.to] > sizes[graph[curr][0].to])
             {
-                heavy[curr] = e.to;
-                maxChild = childSize;
+                swap(e, graph[curr][0]);
             }
-            subtree += childSize;
         }
-        return subtree;
+    }
+
+    void tour(int curr)
+    {
+        position[curr] = timer++;
+        st.initVal(position[curr], value[curr]);
+        for (edge e: graph[curr]) if (e.to != parent[curr])
+        {
+            root[e.to] = e.to == graph[curr][0].to ? root[curr] : e.to;
+            tour(e.to);
+        }
+        endPosition[curr] = timer;
     }
 
     void build()
     {
-        precompute(0);
-        int pos = 0;
-        for (int node = 0; node < sz; node++)
-        {
-            if (parent[node] == -1 or heavy[parent[node]] != node)
-            {
-                for (int curr = node; curr != -1; curr = heavy[curr])
-                {
-                    root[curr] = node;
-                    position[curr] = pos++;
-                }
-            }
-        }
-        for (int curr = 0; curr < sz; curr++)
-        {
-            for (edge e: graph[curr])
-            {
-                if (e.to == parent[curr]) continue;
-
-                st.initVal(position[e.to], e.weight);
-            }
-        }
+        reorder(0);
+        tour(0);
         st.build();
     }
 
     template <class Operation>
     void process(int l, int r, Operation op)
     {
-        while (root[l] != root[r])
+        for (; root[l] != root[r]; r = parent[root[r]])
         {
-            if (depth[root[l]] > depth[root[r]]) swap(l, r);
+            if (position[root[l]] > position[root[r]]) swap(l, r);
             op(position[root[r]], position[r]);
-            r = parent[root[r]];
         }
         if (edgeWeighted and l == r) return;
 
-        if (depth[l] > depth[r]) swap(l, r);
+        if (position[l] > position[r]) swap(l, r);
         op(position[l] + edgeWeighted, position[r]);
     }
 
     void modify(int a, int b, int v)
     {
-        if (depth[a] > depth[b]) swap(a, b);
-        st.modify(position[b], v);
+        st.modify(max(position[a], position[b]), v);
     }
 
     int query(int l, int r)
