@@ -57,68 +57,62 @@ vector <vector<int>> graph;
 
 struct heavyLightDecomposition
 {
-    int sz;
+    int sz, timer = 0;
     bool edgeWeighted;
-    vector <int> parent, heavy, depth, root, position;
+    vector <int> parent, sizes, root, position, endPosition;
     segmentTree st;
 
     heavyLightDecomposition(int s, bool e)
     {
         sz = s;
         st.initialize(sz);
-        parent.resize(sz, -1); heavy.resize(sz, -1); depth.resize(sz); root.resize(sz); position.resize(sz);
+        parent.resize(sz, -1), sizes.resize(sz, -1), root.resize(sz), position.resize(sz), endPosition.resize(sz);
         edgeWeighted = e;
     }
 
-    int precompute(int curr)
+    void reorder(int curr)
     {
-        int subtree = 1, maxChild = -1;
-        for (int i: graph[curr])
+        sizes[curr] = 1;
+        for (int &i: graph[curr]) if (i != parent[curr])
         {
-            if (i == parent[curr]) continue;
-
             parent[i] = curr;
-            depth[i] = depth[curr] + 1;
-            int childSize = precompute(i);
-            if (childSize > maxChild)
+            reorder(i);
+            sizes[curr] += sizes[i];
+            if (sizes[i] > sizes[graph[curr][0]])
             {
-                heavy[curr] = i;
-                maxChild = childSize;
+                swap(i, graph[curr][0]);
             }
-            subtree += childSize;
         }
-        return subtree;
     }
 
-    void build()
+    void tour(int curr)
     {
-        precompute(0);
-        int pos = 0;
-        for (int node = 0; node < sz; node++)
+        position[curr] = timer++;
+        for (int i: graph[curr]) if (i != parent[curr])
         {
-            if (parent[node] == -1 or heavy[parent[node]] != node)
-            {
-                for (int curr = node; curr != -1; curr = heavy[curr])
-                {
-                    root[curr] = node;
-                    position[curr] = pos++;
-                }
-            }
+            root[i] = i == graph[curr][0] ? root[curr] : i;
+            tour(i);
         }
+        endPosition[curr] = timer;
+    }
+
+    void build(int rt)
+    {
+        reorder(rt);
+        tour(rt);
     }
 
     template <class Operation>
     void process(int l, int r, Operation op)
     {
-        while (root[l] != root[r])
+        for (; root[l] != root[r]; r = parent[root[r]])
         {
-            if (depth[root[l]] > depth[root[r]]) swap(l, r);
+            if (position[root[l]] > position[root[r]]) swap(l, r);
             op(position[root[r]], position[r]);
-            r = parent[root[r]];
         }
         if (edgeWeighted and l == r) return;
 
-        if (depth[l] > depth[r]) swap(l, r);
+        if (position[l] > position[r]) swap(l, r);
         op(position[l] + edgeWeighted, position[r]);
     }
 
@@ -154,7 +148,7 @@ int main()
         graph[a].push_back(b);
         graph[b].push_back(a);
     }
-    hld.build();
+    hld.build(0);
 
     int q;
     cin>>q;
@@ -162,18 +156,15 @@ int main()
     for (int i = 0; i < q; i++)
     {
         char type;
-        cin>>type;
+        int a, b;
+        cin>>type>>a>>b;
         if (type == 'I')
         {
-            int p, v;
-            cin>>p>>v;
-            hld.modify(--p, v);
+            hld.modify(--a, b);
         }
         else
         {
-            int l, r;
-            cin>>l>>r;
-            cout<<hld.query(--l, --r)<<'\n';
+            cout<<hld.query(--a, --b)<<'\n';
         }
     }
 
