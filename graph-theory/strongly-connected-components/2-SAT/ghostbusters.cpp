@@ -1,151 +1,115 @@
-//SCC (Kosaraju), 2-SAT, binary search on solution
+//strongly connected component (kosaraju), 2-SAT, binary search on solution
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=5719
 //2016 Mid-Atlantic Regional
 
-#include <algorithm>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <stack>
+
 using namespace std;
 
 #define INF 123123123
 
-struct distPair
-{
-    int d;
-    int i;
-    int j;
-    int t;
-
-    distPair(int a, int b, int c, int ty)
-    {
-        d = a;
-        i = b;
-        j = c;
-        t = ty;
-    }
-
-    bool operator < (distPair b) const
-    {
-        return d < b.d;
-    }
-};
-
 struct pt
 {
-    int x, y;
-    int dist(pt b)
-    {
-        if (x == b.x)
-        {
-            return abs(b.y - y);
-        }
-        if(y == b.y)
-        {
-            return abs(b.x - x);
-        }
-        return INF;
-    }
+    int x;
+    int y;
 };
 
+int n;
+vector <pt> points;
+
+vector <vector<int>> graph, transpose;
 stack <int> order;
-vector <int> visited;
+vector <int> visited, components;
+int scc_sz = 0;
 
-vector <int> components;
-int curr_component = 0;
-
-void dfsOrder(vector <vector<int>> &graph, int curr)
+void ordering(int curr)
 {
     visited[curr] = 1;
-
     for (int neighbor: graph[curr])
     {
         if (!visited[neighbor])
         {
-            dfsOrder(graph, neighbor);
+            ordering(neighbor);
         }
     }
-
     order.push(curr);
 }
 
-void dfsReverse(vector <vector<int>> &graph, int curr)
+void categorize(int curr)
 {
     visited[curr] = 0;
-    components[curr] = curr_component;
-
-    for (int neighbor: graph[curr])
+    components[curr] = scc_sz;
+    for (int neighbor: transpose[curr])
     {
         if (visited[neighbor])
         {
-            dfsReverse(graph, neighbor);
+            categorize(neighbor);
         }
     }
 }
 
-void scc(vector <vector<int>> &g, vector <vector<int>> &tg)
+void kosarajuSCC()
 {
-    visited.resize(g.size(), 0);
-    components.resize(g.size(), -1);
+    int n = graph.size();
+    visited.resize(n, 0);
+    components.resize(n, -1);
 
-    for (int i = 0; i < g.size(); i++)
+    for (int i = 0; i < n; i++)
     {
         if (visited[i]) continue;
 
-        dfsOrder(g, i);
+        ordering(i);
     }
 
     while (!order.empty())
     {
-          int start = order.top();
+          int curr = order.top();
           order.pop();
 
-          if (!visited[start]) continue;
+          if (!visited[curr]) continue;
 
-          dfsReverse(tg, start);
-          curr_component++;
+          categorize(curr);
+          scc_sz++;
     }
 }
 
-bool check(vector <distPair> &ds, int upTo, int sz)
+void add_edge(int i, int j)
 {
+    graph[i].push_back(j);
+    transpose[j].push_back(i);
+}
 
-    vector <vector<int> > graph (sz, vector<int>());
-    vector <vector<int> > transpose(sz, vector<int>());
+bool check(int power)
+{
+    graph.clear(); transpose.clear();
+    graph.resize(2 * n);
+    transpose.resize(2 * n);
 
-    for (distPair dp: ds)
+    for (int i = 0; i < n; i++)
     {
-        int distBet = dp.d;
-        int i = dp.i;
-        int j = dp.j;
-        int type = dp.t;
-
-        if (distBet > 2 * upTo)
+        for (int j = i + 1; j < n; j++)
         {
-            break;
-        }
-
-        if (type == -1)
-        {
-            graph[2 * i].push_back(2 * j + 1);
-            graph[2 * j].push_back(2 * i + 1);
-            transpose[2 * j + 1].push_back(2 * i);
-            transpose[2 * i + 1].push_back(2 * j);
-        }
-        else
-        {
-            graph[2 * i + 1].push_back(2 * j);
-            graph[2 * j + 1].push_back(2 * i);
-            transpose[2 * j].push_back(2 * i + 1);
-            transpose[2 * i].push_back(2 * j + 1);
+            if (points[i].x == points[j].x and abs(points[i].y - points[j].y) <= 2 * power)
+            {
+                add_edge(2 * i + 1, 2 * j);
+                add_edge(2 * j + 1, 2 * i);
+            }
+            else if(points[i].y == points[j].y and abs(points[i].x - points[j].x) <= 2 * power)
+            {
+                add_edge(2 * i, 2 * j + 1);
+                add_edge(2 * j, 2 * i + 1);
+            }
         }
     }
 
-    scc(graph, transpose);
+    kosarajuSCC();
 
-    for (int i = 0; i < graph.size(); i++)
+    for (int i = 0; i < graph.size(); i += 2)
     {
-        if (components[i] == components[i^1])
+        if (components[i] == components[i + 1])
         {
             return false;
         }
@@ -155,37 +119,14 @@ bool check(vector <distPair> &ds, int upTo, int sz)
 
 int main()
 {
-    int n;
     while(cin>>n)
     {
-        vector <pt> points(n);
-        vector <distPair> distSet;
+        points.resize(n);
 
         for (int i = 0; i < n; i++)
         {
             cin>>points[i].x>>points[i].y;
         }
-
-        for (int i = 0; i < n; i++)
-        {
-
-            for (int j = i + 1; j < n; j++)
-            {
-                int distBetween = points[j].dist(points[i]);
-
-                if (distBetween  < INF)
-                {
-                    int typePt = 0;
-                    if (points[i].x == points[j].x)
-                        typePt = 1;
-                    else
-                        typePt = -1;
-                    distSet.push_back(distPair(distBetween,i, j, typePt));
-                }
-            }
-        }
-
-        sort(distSet.begin(), distSet.end());
 
         int left = 0;
         int right = 1000001;
@@ -194,7 +135,7 @@ int main()
         {
             int mid = (left + right + 1) / 2;
 
-            bool val = check(distSet, mid, 2 * n);
+            bool val = check(mid);
 
             if (val)
             {
@@ -205,7 +146,7 @@ int main()
                 right = mid - 1;
             }
         }
-        if (left == 1000001 and check(distSet, left, 2 * n))
+        if (left == 1000001)
         {
             cout<<"UNLIMITED"<<'\n';
         }
