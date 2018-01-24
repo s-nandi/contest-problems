@@ -1,10 +1,8 @@
-//closest pair of points (line sweep, sliding window, sorting)
-//http://www.spoj.com/problems/CLOPPAIR/
-
 #include <iostream>
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <utility>
 #include <cmath>
 #include <iomanip>
 
@@ -28,7 +26,7 @@ struct pt
     }
 };
 
-void closestPairPoints(vector <pt> &points, pt &res1, pt &res2)
+pair <pt, pt> closestPairPoints(vector <pt> &points)
 {
     set <pt> window;
     sort(points.begin(), points.end(), [](pt a, pt b){ return a.x != b.x ? a.x < b.x : a.y < b.y; });
@@ -36,6 +34,7 @@ void closestPairPoints(vector <pt> &points, pt &res1, pt &res2)
 
     double closest = INF;
     int leftMost = 0;
+    pair <pt, pt> res;
 
     for (int i = 1; i < points.size(); i++)
     {
@@ -49,11 +48,12 @@ void closestPairPoints(vector <pt> &points, pt &res1, pt &res2)
             if (distBetween < closest)
             {
                 closest = distBetween;
-                res1 = *it, res2 = points[i];
+                res = {*it, points[i]};
             }
         }
         window.insert(points[i]);
     }
+    return res;
 }
 
 int main()
@@ -73,8 +73,8 @@ int main()
         points[i].index = i;
     }
 
-    pt a, b;
-    closestPairPoints(points, a, b);
+    auto solution = closestPairPoints(points);
+    pt a = solution.first, b = solution.second;
     if (a.index > b.index) swap(a, b);
     cout<<fixed<<a.index<<" "<<b.index<<" "<<a.dist(b)<<'\n';
 
