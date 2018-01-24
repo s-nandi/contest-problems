@@ -1,25 +1,21 @@
-//Rolling Hash, Rabin-Karp, Backtrack
+//rolling hash (rabin-karp), backtrack
 //http://codeforces.com/problemset/problem/291/E
 
 #include <iostream>
 #include <vector>
-#include <queue>
-#include <map>
 
 using namespace std;
 
 #define ll long long
 #define MAXN 1000005
 
-vector <vector <int> > graph;
+vector <vector <int>> graph;
 vector <string> edges;
 string currString;
 int pos;
 
-
 vector <ll> mods = {1000000007, 1000000009};
 vector <int> alpha = {37, 37};
-
 vector <ll> powAlpha[2];
 
 void precompute()
@@ -125,8 +121,6 @@ int dfs(int curr, hashString h, hashString &s)
 
     return res;
 }
-
-
 
 int main()
 {
