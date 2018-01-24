@@ -51,7 +51,7 @@ ll remove_element(ll element, vector <int> &counts, ll curr_sum)
     int elem_count = counts[element];
     counts[element]--;
 
-    return curr_sum - element* (elem_count*elem_count - (elem_count - 1) * (elem_count - 1));
+    return curr_sum - element * (elem_count * elem_count - (elem_count - 1) * (elem_count - 1));
 }
 
 int main()
@@ -66,7 +66,6 @@ int main()
     {
         cin>>nums[i];
         maxn = max(maxn, nums[i]);
-
     }
 
     int l, r;
@@ -88,7 +87,7 @@ int main()
     ll curr_val = add_element(nums[0], element_counts, 0);
 
     ll sols[q];
-
+    
     for (int i = 0; i < queries.size(); i++)
     {
         while (left_pointer < queries[i].left)
