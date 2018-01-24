@@ -1,4 +1,5 @@
 //bitap, modifying character updates, word matching queries
+//http://codeforces.com/contest/914/problem/F
 
 #include <iostream>
 #include <vector>
