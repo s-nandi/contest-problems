@@ -8,60 +8,47 @@ using namespace std;
 
 vector <vector<int>> graph;
 
-struct binaryLift
+int ln = 0;
+vector <vector<int>> binaryLift;
+vector <int> depth;
+
+void buildLift(int curr)
 {
-    int sz, ln;
-    vector <vector<int>> table;
-    vector <int> depth;
-
-    binaryLift(int s)
+    for (int i = 1; i < ln; i++)
     {
-        sz = s, ln = 0;
-        while (1 << ln < sz) ln++;
-        table.resize(sz, vector<int>(ln, -1));
-        depth.resize(sz);
+        binaryLift[curr][i] = binaryLift[curr][i - 1] != -1 ? binaryLift[binaryLift[curr][i - 1]][i - 1] : -1;
     }
-
-    void build(int curr)
+    for (int i: graph[curr]) if (i != binaryLift[curr][0])
     {
-        for (int i = 1; i < ln; i++)
-        {
-            table[curr][i] = table[curr][i - 1] != -1 ? table[table[curr][i - 1]][i - 1] : -1;
-        }
-        for (int i: graph[curr])
-        {
-            if (i == table[curr][0]) continue;
+        binaryLift[i][0] = curr;
+        depth[i] = depth[curr] + 1;
+        buildLift(i);
+    }
+}
 
-            table[i][0] = curr;
-            depth[i] = depth[curr] + 1;
-            build(i);
+int lowestCommonAncestor(int l, int r)
+{
+    if (depth[l] > depth[r]) swap(l, r);
+    int diff = depth[r] - depth[l];
+
+    for (int i = ln - 1; i >= 0; i--)
+    {
+        if (1 << i & diff)
+        {
+            r = binaryLift[r][i];
         }
     }
+    if (l == r) return l;
 
-    int lowestCommonAncestor(int l, int r)
+    for (int i = ln - 1; i >= 0; i--)
     {
-        if (depth[l] > depth[r]) swap(l, r);
-        int diff = depth[r] - depth[l];
-
-        for (int i = ln - 1; i >= 0; i--)
+        if (binaryLift[l][i] != binaryLift[r][i])
         {
-            if (1 << i & diff)
-            {
-                r = table[r][i];
-            }
+            l = binaryLift[l][i], r = binaryLift[r][i];
         }
-        if (l == r) return l;
-
-        for (int i = ln - 1; i >= 0; i--)
-        {
-            if (table[l][i] != table[r][i])
-            {
-                l = table[l][i], r = table[r][i];
-            }
-        }
-        return table[l][0];
     }
-};
+    return binaryLift[l][0];
+}
 
 int main()
 {
@@ -74,9 +61,11 @@ int main()
     {
         int n;
         cin>>n;
+        ln = 0; while (1 << ln < n) ln++;
 
         graph.clear(); graph.resize(n);
-        binaryLift bl(n);
+        binaryLift.clear(); binaryLift.resize(n, vector<int>(ln, -1));
+        depth.clear(); depth.resize(n);
 
         for (int a = 0; a < n; a++)
         {
@@ -91,7 +80,7 @@ int main()
                 graph[b].push_back(a);
             }
         }
-        bl.build(0);
+        buildLift(0);
 
         cout<<"Case "<<test<<":"<<'\n';
 
@@ -102,7 +91,7 @@ int main()
         {
             int a, b;
             cin>>a>>b;
-            cout<<bl.lowestCommonAncestor(--a, --b) + 1<<'\n';
+            cout<<lowestCommonAncestor(--a, --b) + 1<<'\n';
         }
     }
 
