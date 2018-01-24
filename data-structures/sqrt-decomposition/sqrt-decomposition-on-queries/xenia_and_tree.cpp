@@ -1,4 +1,4 @@
-//sqrt decomposition on queries, binary lifting (lowest common ancestor), bfs
+//sqrt decomposition on queries, binary lifting for lowest common ancestor, bfs
 //http://codeforces.com/contest/342/problem/E
 
 #include <iostream>
