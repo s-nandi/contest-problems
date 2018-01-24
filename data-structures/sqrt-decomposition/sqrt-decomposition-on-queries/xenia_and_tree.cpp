@@ -85,14 +85,14 @@ void update()
 
     while(!q.empty())
     {
-        int top = q.front();
+        int curr = q.front();
         q.pop();
 
-        for (int neighbor: graph[top])
+        for (int neighbor: graph[curr])
         {
-            if(distances[top] + 1 < distances[neighbor])
+            if(distances[curr] + 1 < distances[neighbor])
             {
-                distances[neighbor] = distances[top] + 1;
+                distances[neighbor] = distances[curr] + 1;
                 q.push(neighbor);
             }
         }
