@@ -1,8 +1,9 @@
-//rolling hash (rabin-karp), backtrack
+//double hashing (prefix sums), dfs, backtrack
 //http://codeforces.com/problemset/problem/291/E
 
 #include <iostream>
 #include <vector>
+#include <utility>
 
 using namespace std;
 
@@ -11,12 +12,16 @@ using namespace std;
 
 vector <vector <int>> graph;
 vector <string> edges;
-string currString;
-int pos;
 
-vector <ll> mods = {1000000007, 1000000009};
-vector <int> alpha = {37, 37};
-vector <ll> powAlpha[2];
+int alpha[2] = {37, 53};
+int MOD[2] = {1000000007, 1000000009};
+vector <int> powAlpha[2];
+
+int mult(int a, int b, int t)
+{
+    ll res = ((ll) a * b) % MOD[t];
+    return res;
+}
 
 void precompute()
 {
@@ -26,106 +31,87 @@ void precompute()
         powAlpha[t][0] = 1;
         for (int i = 1; i < MAXN; i++)
         {
-            powAlpha[t][i] = (powAlpha[t][i - 1] * alpha[t]) % mods[t];
-            if (powAlpha[t][i] < 0)
-            {
-                powAlpha[t][i] += mods[t];
-            }
-
+            powAlpha[t][i] = mult(alpha[t], powAlpha[t][i - 1], t);
         }
     }
 }
 
-struct hashString
+struct subHash
 {
-    ll hashVal[2];
-    int len;
+    int hashvalue, t, power;
 
-    hashString()
+    bool operator == (subHash o) const
     {
-        len = 0;
-
-        for (int t = 0; t < 2; t++)
-        {
-            ll curr = 1;
-            hashVal[t] = 0;
-        }
-    }
-
-    void addLast(char c)
-    {
-        for (int t = 0; t < 2; t++)
-        {
-            hashVal[t] = (hashVal[t] * alpha[t] + c) % mods[t];
-            if (hashVal[t] < 0)
-            {
-                hashVal[t] += mods[t];
-            }
-
-        }
-        len++;
-
-    }
-
-    void removeFirst(char c)
-    {
-        for (int t = 0; t < 2; t++)
-        {
-            hashVal[t] = (mods[t] + hashVal[t] - powAlpha[t][len - 1] * c) % mods[t];
-            if (hashVal[t] < 0)
-            {
-                hashVal[t] += mods[t];
-            }
-        }
-        len--;
-    }
-
-    bool operator == (hashString o)
-    {
-        return len == o.len and hashVal[0] == o.hashVal[0] and hashVal[1] == o.hashVal[1];
+        int hv1 = hashvalue, hv2 = o.hashvalue, diff = o.power - power;
+        if (diff > 0) return mult(hv1, powAlpha[t][diff], t) == hv2;
+        else return mult(hv2, powAlpha[t][-diff], t) == hv1;
     }
 };
 
+struct hasher
+{
+    int len;
+    vector <int> prefixHash[2];
 
-int dfs(int curr, hashString h, hashString &s)
+    void addChar(char c)
+    {
+        for (int t = 0; t < 2; t++)
+            prefixHash[t].push_back((prefixHash[t][len] + mult(powAlpha[t][len + 1], (c - 'a' + 1), t)) % MOD[t]);
+        len++;
+    }
+
+    void removeChar()
+    {
+        for (int t = 0; t < 2; t++) prefixHash[t].pop_back();
+        len--;
+    }
+
+    void initialize(string &s)
+    {
+        len = 0;
+        prefixHash[0] = {0}, prefixHash[1] = {0};
+        for (int i = 0; i < s.size(); i++) addChar(s[i]);
+    }
+
+    pair <subHash, subHash> query(int l, int r)
+    {
+        return {{(prefixHash[0][r] - prefixHash[0][l - 1] + MOD[0]) % MOD[0], 0, l},
+        {(prefixHash[1][r] - prefixHash[1][l - 1] + MOD[1]) % MOD[1], 1, l}};
+    }
+};
+
+hasher wordHash, needleHash;
+pair <subHash, subHash> target;
+
+int dfs(int curr)
 {
     int res = 0;
-    int backupPos = pos;
-
     for (char c: edges[curr])
     {
-        h.addLast(c);
-        currString += c;
-
-        if (h.len == s.len)
+        wordHash.addChar(c);
+        if (wordHash.len >= needleHash.len)
         {
-            if (h == s)
-            {
-                res++;
-            }
-            h.removeFirst(currString[pos]);
-            pos++;
+            auto subword = wordHash.query(wordHash.len - needleHash.len + 1, wordHash.len);
+            if (subword == target) res++;
         }
     }
-
     for (int neighbor: graph[curr])
     {
-        res += dfs(neighbor, h, s);
+        res += dfs(neighbor);
     }
-
     for (int i = 0; i < edges[curr].length(); i++)
     {
-        currString.pop_back();
+        wordHash.removeChar();
     }
-    pos = backupPos;
-
     return res;
 }
 
 int main()
 {
-    precompute();
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
 
+    precompute();
     int n;
     cin>>n;
 
@@ -135,27 +121,20 @@ int main()
 
     for (int i = 1; i <= n - 1; i++)
     {
-        int p;
-        string s;
+        int p; string s;
         cin>>p>>s;
-        --p;
-        graph[p].push_back(i);
+        graph[--p].push_back(i);
         edges[i] = s;
     }
 
-    string needle;
+    string needle, blank = "";
     cin>>needle;
 
-    hashString s;
-    for (char c: needle)
-    {
-        s.addLast(c);
-    }
+    needleHash.initialize(needle);
+    wordHash.initialize(blank);
 
-    hashString h;
-
-    cout<<dfs(0, h, s)<<'\n';
+    target = needleHash.query(1, needleHash.len);
+    cout<<dfs(0)<<'\n';
 
     return 0;
-
 }
