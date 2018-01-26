@@ -8,18 +8,20 @@ using namespace std;
 
 struct segmentTree
 {
-    int sz, h;
+    int sz, h = 0;
     vector <vector<int>> elements;
     vector <int> lazy;
 
     segmentTree(int s)
     {
         sz = s;
-        h = 0;
         while (1 << h < sz) h++;
         elements.resize(2 * sz, {1, 0, 0});
         lazy.resize(sz);
+    }
 
+    void build()
+    {
         for (int i = sz - 1; i >= 1; i--)
         {
             elements[i][0] = elements[i << 1][0] + elements[i << 1 | 1][0];
@@ -127,6 +129,7 @@ int main()
     cin>>n>>m;
 
     segmentTree st(n);
+    st.build();
 
     for (int i = 0; i < m; i++)
     {
