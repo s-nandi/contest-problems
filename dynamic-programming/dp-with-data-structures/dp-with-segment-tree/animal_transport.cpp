@@ -1,4 +1,4 @@
-//dynamic programming with segment tree, lazy propagation, range maximum query, range increment update
+//dynamic programming with segment tree, lazy propagation, range maximum query, range increment update, binary search
 //https://www.hackerrank.com/contests/world-codesprint-12/challenges/animal-transport/problem
 
 #include <iostream>
@@ -22,17 +22,14 @@ struct segment
 
 struct segmentTree
 {
-    int sz, h;
-    vector <int> elements;
-    vector <int> lazy;
+    int sz, h = 0;
+    vector <int> elements, lazy;
 
     segmentTree(int s)
     {
         sz = s;
-        h = 0;
         while (1 << h < sz) h++;
-        elements.resize(2 * sz);
-        lazy.resize(sz);
+        elements.resize(2 * sz), lazy.resize(sz);
     }
 
     void apply(int p, int v)
@@ -60,9 +57,10 @@ struct segmentTree
 
     void siftUp(int p)
     {
-        while (p >= 2)
+        p >>= 1;
+        while (p >= 1)
         {
-            elements[p >> 1] = max(elements[p], elements[p ^ 1]) + lazy[p >> 1];
+            elements[p] = max(elements[p << 1], elements[p << 1 | 1]) + lazy[p];
             p >>= 1;
         }
     }
@@ -72,7 +70,6 @@ struct segmentTree
         l += sz;
         r += sz;
         int lSave = l, rSave = r;
-
         while (l <= r)
         {
             if (l & 1)
@@ -88,18 +85,14 @@ struct segmentTree
             l >>= 1;
             r >>= 1;
         }
-
-        siftUp(lSave);
-        siftUp(rSave);
+        siftUp(lSave), siftUp(rSave);
     }
 
     int query(int l, int r)
     {
         l += sz;
         r += sz;
-        siftDown(l);
-        siftDown(r);
-
+        siftDown(l), siftDown(r);
         int acc = -INF;
         while (l <= r)
         {
