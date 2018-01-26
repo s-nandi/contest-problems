@@ -1,6 +1,3 @@
-//segment tree, gcd range queries (euclidean algorithm), binary search with queries
-//http://codeforces.com/contest/914/problem/D
-
 #include <iostream>
 #include <vector>
 #include <tuple>
@@ -115,12 +112,9 @@ int main()
     cin>>n;
 
     segmentTree st(n);
-
     for (int i = 0; i < n; i++)
     {
-        int a;
-        cin>>a;
-        st.initVal(i, a);
+        cin>>st[i];
     }
     st.build();
 
