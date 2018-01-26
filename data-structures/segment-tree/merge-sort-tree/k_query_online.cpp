@@ -7,10 +7,23 @@
 
 using namespace std;
 
+struct node
+{
+    vector <int> values;
+
+    node combine(node &o)
+    {
+        node res;
+        res.values.resize(values.size() + o.values.size());
+        merge(values.begin(), values.end(), o.values.begin(), o.values.end(), res.values.begin());
+        return res;
+    }
+};
+
 struct segmentTree
 {
     int sz;
-    vector <vector<int>> elements;
+    vector <node> elements;
 
     segmentTree(int s)
     {
@@ -18,17 +31,16 @@ struct segmentTree
         elements.resize(2 * sz);
     }
 
-    void initVal(int pos, int val)
+    node& operator [] (int i)
     {
-        elements[pos + sz] = {val};
+        return elements[i + sz];
     }
 
     void build()
     {
         for (int i = sz - 1; i >= 1; i--)
         {
-            elements[i].resize(elements[i << 1].size() + elements[i << 1 | 1].size());
-            merge(elements[i << 1].begin(), elements[i << 1].end(), elements[i << 1 | 1].begin(), elements[i << 1 | 1].end(), elements[i].begin());
+            elements[i] = elements[i << 1].combine(elements[i << 1 | 1]);
         }
     }
 
@@ -46,12 +58,12 @@ struct segmentTree
         {
             if (l & 1)
             {
-                acc += numGreater(elements[l], k);
+                acc += numGreater(elements[l].values, k);
                 l++;
             }
             if (!(r & 1))
             {
-                acc += numGreater(elements[r], k);
+                acc += numGreater(elements[r].values, k);
                 r--;
             }
             l >>= 1;
@@ -76,7 +88,7 @@ int main()
     {
         int num;
         cin>>num;
-        st.initVal(i, num);
+        st[i] = {{num}};
     }
     st.build();
 
