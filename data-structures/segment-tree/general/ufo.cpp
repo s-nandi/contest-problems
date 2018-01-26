@@ -18,9 +18,9 @@ struct segmentTree
         elements.resize(2 * sz);
     }
 
-    void initVal(int pos, int val)
+    int& operator [] (int i)
     {
-        elements[pos + sz] = val;
+        return elements[i + sz];
     }
 
     void build()
@@ -35,7 +35,6 @@ struct segmentTree
     {
         p += sz;
         elements[p] = val;
-
         while (p >= 2)
         {
             elements[p >> 1] = max(elements[p], elements[p ^ 1]);
@@ -132,8 +131,8 @@ int main()
             for (int j = 0; j < m; j++)
             {
                 cin>>h[i][j];
-                rows[i].initVal(j, h[i][j]);
-                columns[j].initVal(i, h[i][j]);
+                rows[i][j] = h[i][j];
+                columns[j][i] = h[i][j];
             }
         }
 
