@@ -7,10 +7,23 @@
 
 using namespace std;
 
+struct node
+{
+    vector <int> values;
+
+    node combine(node &o)
+    {
+        node res;
+        res.values.resize(values.size() + o.values.size());
+        merge(values.begin(), values.end(), o.values.begin(), o.values.end(), res.values.begin());
+        return res;
+    }
+};
+
 struct segmentTree
 {
     int sz;
-    vector <vector<int>> elements;
+    vector <node> elements;
 
     segmentTree(int s)
     {
@@ -18,17 +31,16 @@ struct segmentTree
         elements.resize(2 * sz);
     }
 
-    void initVal(int pos, int val)
+    node& operator [] (int i)
     {
-        elements[pos + sz] = {val};
+        return elements[i + sz];
     }
 
     void build()
     {
         for (int i = sz - 1; i >= 1; i--)
         {
-            elements[i].resize(elements[i << 1].size() + elements[i << 1 | 1].size());
-            merge(elements[i << 1].begin(), elements[i << 1].end(), elements[i << 1 | 1].begin(), elements[i << 1 | 1].end(), elements[i].begin());
+            elements[i] = elements[i << 1].combine(elements[i << 1 | 1]);
         }
     }
 
@@ -46,12 +58,12 @@ struct segmentTree
         {
             if (l & 1)
             {
-                acc += numLess(elements[l], k);
+                acc += numLess(elements[l].values, k);
                 l++;
             }
             if (!(r & 1))
             {
-                acc += numLess(elements[r], k);
+                acc += numLess(elements[r].values, k);
                 r--;
             }
             l >>= 1;
@@ -74,8 +86,8 @@ int main()
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    int n, m;
-    cin>>n>>m;
+    int n, q;
+    cin>>n>>q;
 
     vector <int> a(n);
     segmentTree st(n);
@@ -90,34 +102,34 @@ int main()
 
     for (int i = 0; i < n; i++)
     {
-        st.initVal(i, mapping(a[i]));
+        st[i] = {{mapping(a[i])}};
     }
     st.build();
 
-    for (int i = 0; i < m; i++)
+    for (int i = 0; i < q; i++)
     {
-        int l, r, k;
-        cin>>l>>r>>k;
-        --l; --r; --k;
+        int lb, rb, k;
+        cin>>lb>>rb>>k;
+        --lb; --rb; --k;
 
-        int left = 0;
-        int right = n - 1;
+        int l = 0;
+        int r = n -1;
 
-        while (left < right)
+        while (l < r)
         {
-            int mid = (left + right + 1) / 2;
+            int m = (l + r + 1) / 2;
 
-            if (st.query(l, r, mid) <= k)
+            if (st.query(lb, rb, m) <= k)
             {
-                left = mid;
+                l = m;
             }
             else
             {
-                right = mid - 1;
+                r = m - 1;
             }
         }
 
-        cout<<sorted[left]<<'\n';
+        cout<<sorted[l]<<'\n';
     }
 
     return 0;
