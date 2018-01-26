@@ -27,9 +27,9 @@ struct segmentTree
         elements.resize(2 * sz);
     }
 
-    void initVal(int p, int v)
+    int& operator [] (int i)
     {
-        elements[p + sz] = v;
+        return elements[i + sz];
     }
 
     void build()
