@@ -118,15 +118,13 @@ int main()
         {
             int i; ll v;
             cin>>i>>v;
-            --i;
-            st.modify(i, v);
+            st.modify(--i, v);
         }
         else
         {
             int l, r;
             cin>>l>>r;
-            --l; --r;
-            cout<<st.query(l, r)<<'\n';
+            cout<<st.query(--l, --r)<<'\n';
         }
     }
 
