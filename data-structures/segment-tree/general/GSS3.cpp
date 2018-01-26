@@ -11,27 +11,23 @@ using namespace std;
 
 struct node
 {
-    ll entireSum;
-    ll prefixSum;
-    ll suffixSum;
-    ll maxSum;
+    ll entireSum, prefixSum, suffixSum, maxSum;
 
     node(ll val = -INF)
     {
-        entireSum = val; prefixSum = val; suffixSum = val; maxSum = val;
+        entireSum = val, prefixSum = val, suffixSum = val, maxSum = val;
+    }
+
+    node combine(node &o)
+    {
+        node res;
+        res.entireSum = entireSum + o.entireSum;
+        res.prefixSum = max(prefixSum, entireSum + o.prefixSum);
+        res.suffixSum = max(suffixSum + o.entireSum, o.suffixSum);
+        res.maxSum = max(max(maxSum, o.maxSum), suffixSum + o.prefixSum);
+        return res;
     }
 };
-
-node combine(node &a, node &b)
-{
-    node res;
-    res.entireSum = a.entireSum + b.entireSum;
-    res.prefixSum = max(a.entireSum + b.prefixSum, a.prefixSum);
-    res.suffixSum = max(a.suffixSum + b.entireSum, b.suffixSum);
-    res.maxSum = max(max(a.maxSum, b.maxSum), a.suffixSum + b.prefixSum);
-
-    return res;
-}
 
 struct segmentTree
 {
@@ -44,16 +40,16 @@ struct segmentTree
         elements.resize(2 * sz);
     }
 
-    void initVal(int p, ll val)
+    node& operator [] (int i)
     {
-        elements[p + sz] = node(val);
+        return elements[i + sz];
     }
 
     void build()
     {
         for (int i = sz - 1; i >= 1; i--)
         {
-            elements[i] = combine(elements[i << 1], elements[i << 1 | 1]);
+            elements[i] = elements[i << 1].combine(elements[i << 1 | 1]);
         }
     }
 
@@ -61,37 +57,34 @@ struct segmentTree
     {
         p += sz;
         elements[p] = node(val);
-
-        while (p >= 2)
+        p >>= 1;
+        while (p >= 1)
         {
-            elements[p >> 1] = combine(elements[(p >> 1) << 1], elements[(p >> 1) << 1 | 1]);
+            elements[p] = elements[p << 1].combine(elements[p << 1 | 1]);
             p >>= 1;
         }
     }
 
     ll query(int l, int r)
     {
-        node lacc;
-        node racc;
-
-        l += sz;
-        r += sz;
+        node lacc, racc;
+        l += sz, r += sz;
         while (l <= r)
         {
             if (l & 1)
             {
-                lacc = combine(lacc, elements[l]);
+                lacc = lacc.combine(elements[l]);
                 l++;
             }
             if (!(r & 1))
             {
-                racc = combine(elements[r], racc);
+                racc = elements[r].combine(racc);
                 r--;
             }
             l >>= 1;
             r >>= 1;
         }
-        node res = combine(lacc, racc);
+        node res = lacc.combine(racc);
         return res.maxSum;
     }
 };
@@ -110,7 +103,7 @@ int main()
     {
         ll a;
         cin>>a;
-        st.initVal(i, a);
+        st[i] = node(a);
     }
     st.build();
 
