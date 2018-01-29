@@ -8,6 +8,9 @@
 
 using namespace std;
 
+#define LOGN 20
+#define MAXN 100001
+
 struct element
 {
     pair <int, int> ranking;
@@ -18,11 +21,10 @@ struct element
             return ranking < o.ranking;
         else
             return index < o.index;
-
     }
 };
 
-int table[20][100000];
+int table[LOGN][MAXN];
 int lr;
 int minPrefix;
 
@@ -30,11 +32,11 @@ struct suffixArray
 {
     suffixArray(string s)
     {
-        int N = s.length();
+        int n = s.length();
 
-        vector <element> prefix(N);
+        vector <element> prefix(n);
 
-        for (int i = 0; i < N; i++)
+        for (int i = 0; i < n; i++)
         {
             table[0][i] = s[i] - 'a';
         }
@@ -42,19 +44,17 @@ struct suffixArray
         for (int k = 1; ; k++)
         {
             int len = 1 << (k - 1);
+            if (len >= n) break;
 
-            if (len >= N) break;
-
-            for (int i = 0; i < N; i++)
+            for (int i = 0; i < n; i++)
             {
-                prefix[i] = {{table[k - 1][i], table[k - 1][(i + len) % N]}, i};
+                prefix[i] = {{table[k - 1][i], table[k - 1][(i + len) % n]}, i};
             }
-
             sort(prefix.begin(), prefix.end());
 
             minPrefix = prefix[0].index;
 
-            for (int i = 0; i < N; i++)
+            for (int i = 0; i < n; i++)
             {
                 table[k][prefix[i].index] = i > 0 and prefix[i].ranking == prefix[i - 1].ranking ? table[k][prefix[i - 1].index] : i;
             }
@@ -63,7 +63,7 @@ struct suffixArray
         }
     }
 
-    int operator [](int i)
+    int& operator [](int i)
     {
         return table[lr][i];
     }
@@ -89,6 +89,6 @@ int main()
 
         cout<<minPrefix<<endl;
     }
+
     return 0;
 }
-
