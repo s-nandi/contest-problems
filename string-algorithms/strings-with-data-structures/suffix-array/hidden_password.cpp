@@ -8,64 +8,49 @@
 
 using namespace std;
 
-#define LOGN 20
-#define MAXN 100001
-
 struct element
 {
     pair <int, int> ranking;
     int index;
     bool operator < (element o) const
     {
-        if (ranking != o.ranking)
-            return ranking < o.ranking;
-        else
-            return index < o.index;
+        return ranking != o.ranking ? ranking < o.ranking : index < o.index;
     }
 };
 
-int table[LOGN][MAXN];
-int lr;
-int minPrefix;
-
 struct suffixArray
 {
+    vector <vector<int>> table;
+    vector <element> suffix;
+    int sz, h = 0;
+    int minPrefix;
+
     suffixArray(string s)
     {
-        int n = s.length();
+        sz = s.length();
+        while (1 << h < sz) h++;
 
-        vector <element> prefix(n);
+        table.resize(sz, vector<int>(h));
+        suffix.resize(sz);
 
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < sz; i++)
         {
-            table[0][i] = s[i] - 'a';
+            table[i][0] = s[i] - 'a';
         }
-
-        for (int k = 1; ; k++)
+        for (int k = 1, len = 1; k < h; k++, len <<= 1)
         {
-            int len = 1 << (k - 1);
-            if (len >= n) break;
-
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < sz; i++)
             {
-                prefix[i] = {{table[k - 1][i], table[k - 1][(i + len) % n]}, i};
+                suffix[i] = {{table[i][k - 1], table[(i + len) % sz][k - 1]}, i};
             }
-            sort(prefix.begin(), prefix.end());
+            sort(suffix.begin(), suffix.end());
 
-            minPrefix = prefix[0].index;
-
-            for (int i = 0; i < n; i++)
+            minPrefix = suffix[0].index;
+            for (int i = 0; i < sz; i++)
             {
-                table[k][prefix[i].index] = i > 0 and prefix[i].ranking == prefix[i - 1].ranking ? table[k][prefix[i - 1].index] : i;
+                table[suffix[i].index][k] = i > 0 and suffix[i].ranking == suffix[i - 1].ranking ? table[suffix[i - 1].index][k] : i;
             }
-
-            lr = k;
         }
-    }
-
-    int& operator [](int i)
-    {
-        return table[lr][i];
     }
 };
 
@@ -77,7 +62,7 @@ int main()
     int T;
     cin>>T;
 
-    for (int test = 0; test < T; test++)
+    while(T--)
     {
         int sz;
         cin>>sz;
@@ -87,7 +72,7 @@ int main()
 
         suffixArray sa = suffixArray(s);
 
-        cout<<minPrefix<<endl;
+        cout<<sa.minPrefix<<endl;
     }
 
     return 0;
