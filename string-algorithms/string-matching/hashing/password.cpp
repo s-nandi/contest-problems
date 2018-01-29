@@ -35,13 +35,16 @@ void precompute()
 
 struct subHash
 {
-    int hashvalue, t, power;
+    int hashValue;
+
+    subHash(int hashing, int power, int t)
+    {
+        hashValue = mult(hashing, powAlpha[t][MAXN - power], t);
+    }
 
     bool operator == (subHash o) const
     {
-        int hv1 = hashvalue, hv2 = o.hashvalue, diff = o.power - power;
-        if (diff > 0) return mult(hv1, powAlpha[t][diff], t) == hv2;
-        else mult(hv2, powAlpha[t][-diff], t) == hv1;
+        return hashValue == o.hashValue;
     }
 };
 
@@ -64,10 +67,10 @@ struct hasher
         for (int i = 0; i < s.size(); i++) add(s[i]);
     }
 
-    pair <subHash, subHash> query(int l, int r)
+     pair <subHash, subHash> query(int l, int r)
     {
-        return {{(prefixHash[0][r] - prefixHash[0][l - 1] + MOD[0]) % MOD[0], 0, l},
-        {(prefixHash[1][r] - prefixHash[1][l - 1] + MOD[1]) % MOD[1], 1, l}};
+        return {subHash((prefixHash[0][r] - prefixHash[0][l - 1] + MOD[0]) % MOD[0], l, 0),
+        subHash((prefixHash[1][r] - prefixHash[1][l - 1] + MOD[1]) % MOD[1], l, 1)};
     }
 };
 
