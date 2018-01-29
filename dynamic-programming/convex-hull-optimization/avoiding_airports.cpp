@@ -1,4 +1,4 @@
-//dynamic programming, convex hull trick
+//dynamic programming, convex hull trick (online)
 //https://open.kattis.com/problems/avoidingairports (2017 Mid-Atlantic Regional)
 
 #include <vector>
