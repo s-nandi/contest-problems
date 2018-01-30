@@ -1,10 +1,6 @@
-//suffix array (string rotation)
-//https://icpcarchive.ecs.baylor.edu/index.php?option=onlinejudge&page=show_problem&problem=756
-//2003 Southeastern European Regional
-
 #include <iostream>
-#include <algorithm>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -35,9 +31,8 @@ struct suffixArray
         {
             table[i][0] = s[i] - 'a';
         }
-        for (int k = 1; k <= h; k++)
+        for (int k = 1, len = 1; k <= h; k++, len <<= 1)
         {
-            int len = 1 << (k - 1);
             for (int i = 0; i < sz; i++)
             {
                 suffix[i] = {{table[i][k - 1], table[(i + len) % sz][k - 1]}, i};
