@@ -53,9 +53,8 @@ struct suffixArray
         {
             table[i] = int(s[i]);
         }
-        for (int k = 1; k <= h; k++)
+        for (int k = 1, len = 1; k <= h; k++, len <<= 1)
         {
-            int len = 1 << (k - 1);
             for (int i = 0; i < sz; i++)
             {
                 suffix[i] = {{table[i], i + len < sz ? table[i + len] : -1}, i};
