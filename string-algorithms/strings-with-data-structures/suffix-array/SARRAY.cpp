@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const int alpha = 128;
+#define MAXN 100001
 
 struct element
 {
@@ -14,14 +14,15 @@ struct element
     int index;
 };
 
-vector <vector <element>> bucket;
+vector <element> bucket[MAXN];
+int numBuckets;
 void countingSort(vector <element> &v, bool byFirst)
 {
     for (int i = 0; i < v.size(); i++)
     {
         bucket[byFirst ? v[i].ranking.first + 1 : v[i].ranking.second + 1].push_back(v[i]);
     }
-    for (int i = 0, pos = 0; i < bucket.size(); i++)
+    for (int i = 0, pos = 0; i <= numBuckets; i++)
     {
         for (auto &elem: bucket[i]) v[pos++] = elem;
         bucket[i].clear();
@@ -36,49 +37,41 @@ void radixSort(vector <element> &v)
 
 struct suffixArray
 {
-    vector <int> table, inverseTable;
+    vector <int> ranks, ordered;
     vector <element> suffix;
-    int sz, h = 0, nb;
+    int sz, h = 0;
 
     suffixArray(string s)
     {
         sz = s.length();
         while (1 << h < sz) h++;
-        nb = max(sz, alpha);
 
-        table.resize(sz), suffix.resize(sz), inverseTable.resize(sz);
-        bucket.clear(), bucket.resize(nb + 1);
+        ranks.resize(sz), suffix.resize(sz), ordered.resize(sz);
 
+        numBuckets = 0;
         for (int i = 0; i < sz; i++)
         {
-            table[i] = int(s[i]);
+            ranks[i] = int(s[i]);
+            numBuckets = max(numBuckets, ranks[i] + 1);
         }
         for (int k = 1, len = 1; k <= h; k++, len <<= 1)
         {
             for (int i = 0; i < sz; i++)
             {
-                suffix[i] = {{table[i], i + len < sz ? table[i + len] : -1}, i};
+                suffix[i] = {{ranks[i], i + len < sz ? ranks[i + len] : -1}, i};
             }
             radixSort(suffix);
+            numBuckets = 0;
             for (int i = 0; i < sz; i++)
             {
-                table[suffix[i].index] = i > 0 and suffix[i].ranking == suffix[i - 1].ranking ? table[suffix[i - 1].index] : i;
+                ranks[suffix[i].index] = i > 0 and suffix[i].ranking == suffix[i - 1].ranking ? ranks[suffix[i - 1].index] : numBuckets++;
             }
+            if (numBuckets == sz) break;
         }
         for (int i = 0; i < sz; i++)
         {
-            inverseTable[(*this)[i]] = i;
+            ordered[ranks[i]] = i;
         }
-    }
-
-    int operator [] (int i)
-    {
-        return table[i];
-    }
-
-    int inverse(int i)
-    {
-        return inverseTable[i];
     }
 };
 
@@ -94,7 +87,7 @@ int main()
 
     for (int i = 0; i < s.length(); i++)
     {
-        cout<<sa.inverse(i)<<'\n';
+        cout<<sa.ordered[i]<<'\n';
     }
 
     return 0;
