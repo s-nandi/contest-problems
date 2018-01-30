@@ -20,10 +20,10 @@ struct binaryLift
         while (1 << h < sz) h++;
         table.resize(sz, vector<int>(h, -1)), depth.resize(sz);
 
-        buildLift(graph, 0);
+        build(graph, 0);
     }
 
-    void buildLift(vector <vector<int>> &graph, int curr)
+    void build(vector <vector<int>> &graph, int curr)
     {
         for (int i = 1; i < h; i++)
         {
@@ -33,7 +33,7 @@ struct binaryLift
         {
             table[i][0] = curr;
             depth[i] = depth[curr] + 1;
-            buildLift(graph, i);
+            build(graph, i);
         }
     }
 
