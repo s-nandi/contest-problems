@@ -1,4 +1,4 @@
-//suffix array (range lcp queries), longest common substring, sparse table, 2-pointer method
+//suffix array (radix sort), kasai LCP (range queries), longest common substring, sparse table, 2-pointer method
 //http://www.spoj.com/problems/LONGCS/
 
 #include <iostream>
@@ -6,6 +6,8 @@
 #include <algorithm>
 
 using namespace std;
+
+#define MAXN 100010
 
 struct sparseTable
 {
@@ -48,12 +50,28 @@ struct element
 {
     pair <int, int> ranking;
     int index;
-
-    bool operator < (element o) const
-    {
-        return ranking != o.ranking ? ranking < o.ranking : index < o.index;
-    }
 };
+
+vector <element> bucket[MAXN];
+int numBuckets;
+void countingSort(vector <element> &v, bool byFirst)
+{
+    for (int i = 0; i < v.size(); i++)
+    {
+        bucket[byFirst ? v[i].ranking.first + 1 : v[i].ranking.second + 1].push_back(v[i]);
+    }
+    for (int i = 0, pos = 0; i <= numBuckets; i++)
+    {
+        for (auto &elem: bucket[i]) v[pos++] = elem;
+        bucket[i].clear();
+    }
+}
+
+void radixSort(vector <element> &v)
+{
+    countingSort(v, false);
+    countingSort(v, true);
+}
 
 struct suffixArray
 {
@@ -66,12 +84,14 @@ struct suffixArray
     {
         sz = s.length();
         while (1 << h < sz) h++;
+        numBuckets = 0;
 
         ranks.resize(sz), suffix.resize(sz), ordered.resize(sz);
 
         for (int i = 0; i < sz; i++)
         {
             ranks[i] = int(s[i]);
+            numBuckets = max(numBuckets, ranks[i] + 1);
         }
         for (int k = 1, len = 1; k <= h; k++, len <<= 1)
         {
@@ -79,8 +99,8 @@ struct suffixArray
             {
                 suffix[i] = {{ranks[i], i + len < sz ? ranks[i + len] : -1}, i};
             }
-            sort(suffix.begin(), suffix.end());
-            int numBuckets = 0;
+            radixSort(suffix);
+            numBuckets = 0;
             for (int i = 0; i < sz; i++)
             {
                 ranks[suffix[i].index] = i > 0 and suffix[i].ranking == suffix[i - 1].ranking ? ranks[suffix[i - 1].index] : numBuckets++;
