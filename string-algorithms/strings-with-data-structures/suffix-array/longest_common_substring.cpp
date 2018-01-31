@@ -1,6 +1,3 @@
-//suffix array (radix sort), kasai LCP (range queries), longest common substring, sparse table, 2-pointer method
-//http://www.spoj.com/problems/LONGCS/
-
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -145,7 +142,7 @@ int longestCommonSubstring(vector <string> &v)
     string concat = "";
     for (int i = 0; i < n; i++)
     {
-        concat += v[i] + "!";
+        concat += v[i] + ((i & 1) ? "!" : "&");
         partitions[i] = v[i].size() + 1 + (i > 0 ? partitions[i - 1] : 0);
     }
 
