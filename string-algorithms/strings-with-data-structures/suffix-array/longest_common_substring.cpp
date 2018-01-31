@@ -18,7 +18,7 @@ struct sparseTable
     void initialize(int s)
     {
         sz = s;
-        while (1 << h < s) h++;
+        while (1 << h < sz) h++;
         table.resize(sz, vector<int>(h + 1, -1)), log.resize(sz + 1);
     }
 
