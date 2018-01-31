@@ -1,3 +1,6 @@
+//suffix array (radix sort), kasai's algorithm (range lcp queries), longest common subsequence, sparse table, two pointer method
+//http://www.spoj.com/problems/SARRAY/
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -137,27 +140,25 @@ struct suffixArray
 int longestCommonSubstring(vector <string> &v)
 {
     int n = v.size();
-    vector <int> partitions(n);
 
     string concat = "";
     for (int i = 0; i < n; i++)
     {
         concat += v[i] + ((i & 1) ? "!" : "&");
-        partitions[i] = v[i].size() + 1 + (i > 0 ? partitions[i - 1] : 0);
     }
 
     suffixArray sa(concat);
     vector <int> categories(concat.length());
 
-    for (int i = 0; i < concat.length(); i++)
+    for (int i = 1; i < concat.length(); i++)
     {
-        categories[i] = upper_bound(partitions.begin(), partitions.end(), i) - partitions.begin();
+        categories[i] = (concat[i] != '!' and concat[i] != '&') ? categories[i - 1] : categories[i - 1] + 1;
     }
 
     vector <int> counts(n);
-    int active = 0, sol = -1;
+    int sol = -1;
 
-    for (int l = 0, r = 0; l < concat.length(); l++)
+    for (int l = 0, r = 0, active = 0; l < concat.length(); l++)
     {
         while (r < concat.length() and (r <= l or active < n))
         {
