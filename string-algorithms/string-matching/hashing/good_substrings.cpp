@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include <set>
+#include <algorithm>
 
 using namespace std;
 
@@ -16,7 +16,7 @@ vector <int> powAlpha[2];
 
 int mult(int a, int b, int t)
 {
-    ll res = ((ll) a * (ll) b) % MOD[t];
+    ll res = ((ll) a * b) % MOD[t];
     return res;
 }
 
@@ -37,6 +37,7 @@ struct subHash
 {
     int hashValue;
 
+    subHash(){}
     subHash(int hashing, int power, int t)
     {
         hashValue = mult(hashing, powAlpha[t][MAXN - power], t);
@@ -45,6 +46,11 @@ struct subHash
     bool operator < (subHash o) const
     {
         return hashValue < o.hashValue;
+    }
+
+    bool operator == (subHash o) const
+    {
+        return hashValue == o.hashValue;
     }
 };
 
@@ -69,8 +75,14 @@ struct hasher
 
     pair <subHash, subHash> query(int l, int r)
     {
-        return {subHash((prefixHash[0][r] - prefixHash[0][l - 1] + MOD[0]) % MOD[0], l, 0),
-        subHash((prefixHash[1][r] - prefixHash[1][l - 1] + MOD[1]) % MOD[1], l, 1)};
+        pair <subHash, subHash> res;
+        for (int t = 0; t < 2; t++)
+        {
+            auto curr = subHash((prefixHash[t][r] - prefixHash[t][l - 1] + MOD[t]) % MOD[t], l, t);
+            if (t == 0) res.first = curr;
+            else res.second = curr;
+        }
+        return res;
     }
 };
 
@@ -107,7 +119,7 @@ int main()
         prefixSums[i] = prefixSums[i - 1] + bad[s[i - 1] - 'a'];
     }
 
-    set <pair<subHash, subHash>> valid;
+    vector <pair<subHash, subHash>> valid;
 
     for (int i = 1; i <= len; i++)
     {
@@ -115,10 +127,12 @@ int main()
         {
             if (prefixSums[j] - prefixSums[i - 1] <= k)
             {
-                valid.insert(h.query(i, j));
+                valid.push_back(h.query(i, j));
             }
         }
     }
+    sort(valid.begin(), valid.end());
+    valid.erase(unique(valid.begin(), valid.end()), valid.end());
 
     cout<<valid.size()<<'\n';
 
