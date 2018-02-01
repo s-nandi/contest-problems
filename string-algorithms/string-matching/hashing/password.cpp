@@ -37,6 +37,7 @@ struct subHash
 {
     int hashValue;
 
+    subHash(){}
     subHash(int hashing, int power, int t)
     {
         hashValue = mult(hashing, powAlpha[t][MAXN - power], t);
@@ -67,20 +68,23 @@ struct hasher
         for (int i = 0; i < s.size(); i++) add(s[i]);
     }
 
-     pair <subHash, subHash> query(int l, int r)
+    pair <subHash, subHash> query(int l, int r)
     {
-        return {subHash((prefixHash[0][r] - prefixHash[0][l - 1] + MOD[0]) % MOD[0], l, 0),
-        subHash((prefixHash[1][r] - prefixHash[1][l - 1] + MOD[1]) % MOD[1], l, 1)};
+        pair <subHash, subHash> res;
+        for (int t = 0; t < 2; t++)
+        {
+            auto curr = subHash((prefixHash[t][r] - prefixHash[t][l - 1] + MOD[t]) % MOD[t], l, t);
+            if (t == 0) res.first = curr;
+            else res.second = curr;
+        }
+        return res;
     }
 };
 
-hasher textHash;
-string text;
-
-bool test(int wordLen)
+bool test(hasher &textHash, int wordLen)
 {
     auto subtext = textHash.query(1, wordLen);
-    for (int i = 2; i + wordLen - 1 <= text.length() - 1; i++)
+    for (int i = 2; i + wordLen - 1 <= textHash.len - 1; i++)
     {
         auto subword = textHash.query(i, i + wordLen - 1);
         if (subtext == subword)
@@ -97,6 +101,7 @@ int main()
     cin.tie(NULL);
 
     precompute();
+    string text; hasher textHash;
     cin>>text;
     textHash.initialize(text);
 
@@ -121,7 +126,7 @@ int main()
         while (l < r)
         {
             int m = (l + r + 1) / 2;
-            bool res = test(candidates[m]);
+            bool res = test(textHash, candidates[m]);
 
             if (res)
             {
@@ -133,7 +138,7 @@ int main()
             }
         }
 
-        if (test(candidates[l]))
+        if (test(textHash, candidates[l]))
         {
             cout<<text.substr(0, candidates[l])<<'\n';
             return 0;
