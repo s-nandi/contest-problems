@@ -10,8 +10,7 @@ using namespace std;
 #define ll long long
 #define MAXN 1000005
 
-vector <vector <int>> graph;
-vector <string> edges;
+typedef vector <vector<int>> graph;
 
 int alpha[2] = {37, 53};
 int MOD[2] = {1000000007, 1000000009};
@@ -79,15 +78,21 @@ struct hasher
 
     pair <subHash, subHash> query(int l, int r)
     {
-        return {subHash((prefixHash[0][r] - prefixHash[0][l - 1] + MOD[0]) % MOD[0], l, 0),
-        subHash((prefixHash[1][r] - prefixHash[1][l - 1] + MOD[1]) % MOD[1], l, 1)};
+        pair <subHash, subHash> res;
+        for (int t = 0; t < 2; t++)
+        {
+            auto curr = subHash((prefixHash[t][r] - prefixHash[t][l - 1] + MOD[t]) % MOD[t], l, t);
+            if (t == 0) res.first = curr;
+            else res.second = curr;
+        }
+        return res;
     }
 };
 
 hasher wordHash, needleHash;
 pair <subHash, subHash> target;
 
-int dfs(int curr)
+int dfs(graph &g, int curr, vector <string> &edges)
 {
     int res = 0;
     for (char c: edges[curr])
@@ -99,9 +104,9 @@ int dfs(int curr)
             if (subword == target) res++;
         }
     }
-    for (int neighbor: graph[curr])
+    for (int neighbor: g[curr])
     {
-        res += dfs(neighbor);
+        res += dfs(g, neighbor, edges);
     }
     for (int i = 0; i < edges[curr].length(); i++)
     {
@@ -119,15 +124,15 @@ int main()
     int n;
     cin>>n;
 
-    graph.resize(n);
-    edges.resize(n);
+    graph g(n);
+    vector <string> edges(n);
     edges[0] = "";
 
     for (int i = 1; i <= n - 1; i++)
     {
         int p; string s;
         cin>>p>>s;
-        graph[--p].push_back(i);
+        g[--p].push_back(i);
         edges[i] = s;
     }
 
@@ -138,7 +143,7 @@ int main()
     wordHash.initialize(blank);
 
     target = needleHash.query(1, needleHash.len);
-    cout<<dfs(0)<<'\n';
+    cout<<dfs(g, 0, edges)<<'\n';
 
     return 0;
 }
