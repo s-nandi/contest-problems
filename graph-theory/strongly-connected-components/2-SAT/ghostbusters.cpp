@@ -1,92 +1,81 @@
-//strongly connected component (kosaraju), 2-SAT, binary search on solution
+//strongly connected components (kosaraju), 2-SAT, binary search on solution
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=5719
 //2016 Mid-Atlantic Regional
 
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <stack>
+#include <deque>
 
 using namespace std;
 
-#define INF 123123123
+#define INF 1231231234
 
 struct pt
 {
-    int x;
-    int y;
+    int x, y;
 };
 
-int n;
-vector <pt> points;
+typedef vector <vector<int>> graph;
 
-vector <vector<int>> graph, transpose;
-stack <int> order;
-vector <int> visited, components;
-int scc_sz = 0;
-
-void ordering(int curr)
+void ordering(graph &g, int curr, vector <int> &visited, deque <int> &ordered)
 {
+    if (visited[curr]) return;
     visited[curr] = 1;
-    for (int neighbor: graph[curr])
+    for (int neighbor: g[curr]) if (!visited[neighbor])
     {
-        if (!visited[neighbor])
-        {
-            ordering(neighbor);
-        }
+        ordering(g, neighbor, visited, ordered);
     }
-    order.push(curr);
+    ordered.push_front(curr);
 }
 
-void categorize(int curr)
+void categorize(graph &t, int curr, vector <int> &visited, vector <vector<int>> &components)
 {
-    visited[curr] = 0;
-    components[curr] = scc_sz;
-    for (int neighbor: transpose[curr])
+    if (visited[curr]) return;
+    visited[curr] = 1;
+    components.rbegin() -> push_back(curr);
+    for (int neighbor: t[curr]) if (!visited[neighbor])
     {
-        if (visited[neighbor])
-        {
-            categorize(neighbor);
-        }
+        categorize(t, neighbor, visited, components);
     }
 }
 
-void kosarajuSCC()
+vector <vector<int>> kosarajuSCC(graph &g)
 {
-    int n = graph.size();
-    visited.resize(n, 0);
-    components.resize(n, -1);
+    int n = g.size();
+    graph t(n);
+    vector <int> visited(n);
+    deque <int> ordered;
+    vector <vector<int>> components;
 
     for (int i = 0; i < n; i++)
     {
-        if (visited[i]) continue;
-
-        ordering(i);
+        for (int j: g[i])
+        {
+            t[j].push_back(i);
+        }
     }
 
-    while (!order.empty())
+    for (int i = 0; i < n; i++) if (!visited[i])
     {
-          int curr = order.top();
-          order.pop();
-
-          if (!visited[curr]) continue;
-
-          categorize(curr);
-          scc_sz++;
+        ordering(g, i, visited, ordered);
     }
+
+    fill(visited.begin(), visited.end(), 0);
+
+    for (int i: ordered) if (!visited[i])
+    {
+          components.push_back({});
+          categorize(t, i, visited, components);
+    }
+
+    return components;
 }
 
-void add_edge(int i, int j)
+bool check(vector <pt> &points, int power)
 {
-    graph[i].push_back(j);
-    transpose[j].push_back(i);
-}
-
-bool check(int power)
-{
-    graph.clear(); transpose.clear();
-    graph.resize(2 * n);
-    transpose.resize(2 * n);
+    int n = points.size();
+    graph g(2 * n);
 
     for (int i = 0; i < n; i++)
     {
@@ -94,22 +83,31 @@ bool check(int power)
         {
             if (points[i].x == points[j].x and abs(points[i].y - points[j].y) <= 2 * power)
             {
-                add_edge(2 * i + 1, 2 * j);
-                add_edge(2 * j + 1, 2 * i);
+                g[2 * i + 1].push_back(2 * j);
+                g[2 * j + 1].push_back(2 * i);
             }
             else if(points[i].y == points[j].y and abs(points[i].x - points[j].x) <= 2 * power)
             {
-                add_edge(2 * i, 2 * j + 1);
-                add_edge(2 * j, 2 * i + 1);
+                g[2 * i].push_back(2 * j + 1);
+                g[2 * j].push_back(2 * i + 1);
             }
         }
     }
 
-    kosarajuSCC();
+    auto components = kosarajuSCC(g);
+    vector <int> numComponent(2 * n);
 
-    for (int i = 0; i < graph.size(); i += 2)
+    for (int i = 0; i < components.size(); i++)
     {
-        if (components[i] == components[i + 1])
+        for (int j: components[i])
+        {
+            numComponent[j] = i;
+        }
+    }
+
+    for (int i = 0; i < 2 * n; i += 2)
+    {
+        if (numComponent[i] == numComponent[i + 1])
         {
             return false;
         }
@@ -119,9 +117,10 @@ bool check(int power)
 
 int main()
 {
+    int n;
     while(cin>>n)
     {
-        points.resize(n);
+        vector <pt> points(n);
 
         for (int i = 0; i < n; i++)
         {
@@ -134,8 +133,7 @@ int main()
         while (left < right)
         {
             int mid = (left + right + 1) / 2;
-
-            bool val = check(mid);
+            bool val = check(points, mid);
 
             if (val)
             {
