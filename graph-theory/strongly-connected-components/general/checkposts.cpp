@@ -1,3 +1,6 @@
+//strongly connected components (kosaraju)
+//http://codeforces.com/contest/427/problem/C
+
 #include <iostream>
 #include <vector>
 #include <deque>
