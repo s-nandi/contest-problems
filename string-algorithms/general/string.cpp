@@ -16,17 +16,8 @@ struct substring
 
     bool operator > (const substring &o) const
     {
-        int len1 = b - f + 1, len2 = o.b - o.f + 1;
-        int len = min(len1, len2);
-
-        for (int i = 0; i < len; i++)
-        {
-            if (s[f + i] != s[o.f + i])
-            {
-                return s[f + i] > s[o.f + i];
-            }
-        }
-        return len == len2;
+        int cmp = s.compare(f, b - f + 1, s, o.f, o.b - o.f + 1);
+        return cmp != 0 ? cmp > 0 : f > o.f;
     }
 };
 
