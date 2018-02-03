@@ -8,41 +8,48 @@ using namespace std;
 
 #define ll long long
 
-struct node
-{
-    string s;
-    int index;
+string s;
 
-    bool operator > (const node &o) const
+struct substring
+{
+    int f, b;
+
+    bool operator > (const substring &o) const
     {
-        int cmp = s.compare(o.s);
-        if (cmp != 0) return cmp > 0;
-        return index > o.index;
+        int len1 = b - f + 1, len2 = o.b - o.f + 1;
+        int len = min(len1, len2);
+
+        for (int i = 0; i < len; i++)
+        {
+            if (s[f + i] != s[o.f + i])
+            {
+                return s[f + i] > s[o.f + i];
+            }
+        }
+        return len == len2;
     }
 };
 
-string kthSubstring(string &s, int k)
+string kthSubstring(int k)
 {
-    priority_queue <node, vector<node>, greater<node>> pq;
+    priority_queue <substring, vector<substring>, greater<substring>> pq;
     int len = s.length();
 
     for (int i = 0; i < len; i++)
     {
-        pq.push({string(1, s[i]), i});
+        pq.push({i, i});
     }
-    string a; int b;
+
     while (!pq.empty())
     {
-        if (--k == 0) return pq.top().s;
-
-        a = pq.top().s;
-        b = pq.top().index;
+        int f = pq.top().f, b = pq.top().b;
         pq.pop();
+
+        if (--k == 0) return s.substr(f, b - f + 1);
 
         if (++b < len)
         {
-            a += s[b];
-            pq.push({a, b});
+            pq.push({f, b});
         }
     }
     return "";
@@ -50,7 +57,6 @@ string kthSubstring(string &s, int k)
 
 int main()
 {
-    string s;
     int k;
     cin>>s>>k;
 
@@ -58,7 +64,7 @@ int main()
     ll possible = ((ll) len * (len + 1)) / 2;
 
     if (k > possible) cout<<"No such line."<<'\n';
-    else cout<<kthSubstring(s, k)<<'\n';
+    else cout<<kthSubstring(k)<<'\n';
 
     return 0;
 }
