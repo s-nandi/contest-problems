@@ -53,13 +53,14 @@ struct segmentTree
     }
 };
 
-vector <vector<int>> graph;
+typedef vector <vector<int>> graph;
 
 struct heavyLightDecomposition
 {
     int sz, timer = 0;
     bool edgeWeighted;
     vector <int> parent, sizes, root, position, endPosition;
+    graph g;
     segmentTree st;
 
     heavyLightDecomposition(int s, bool e)
@@ -73,14 +74,14 @@ struct heavyLightDecomposition
     void reorder(int curr)
     {
         sizes[curr] = 1;
-        for (int &i: graph[curr]) if (i != parent[curr])
+        for (int &i: g[curr]) if (i != parent[curr])
         {
             parent[i] = curr;
             reorder(i);
             sizes[curr] += sizes[i];
-            if (sizes[i] > sizes[graph[curr][0]])
+            if (sizes[i] > sizes[g[curr][0]])
             {
-                swap(i, graph[curr][0]);
+                swap(i, g[curr][0]);
             }
         }
     }
@@ -88,16 +89,17 @@ struct heavyLightDecomposition
     void tour(int curr)
     {
         position[curr] = timer++;
-        for (int i: graph[curr]) if (i != parent[curr])
+        for (int i: g[curr]) if (i != parent[curr])
         {
-            root[i] = i == graph[curr][0] ? root[curr] : i;
+            root[i] = i == g[curr][0] ? root[curr] : i;
             tour(i);
         }
         endPosition[curr] = timer;
     }
 
-    void build(int rt)
+    void build(graph &gr, int rt)
     {
+        g = gr;
         reorder(rt);
         tour(rt);
     }
@@ -137,7 +139,7 @@ int main()
     int n;
     cin>>n;
 
-    graph.resize(n);
+    graph g(n);
     heavyLightDecomposition hld(n, false);
 
     for (int i = 0; i < n - 1; i++)
@@ -145,10 +147,10 @@ int main()
         int a, b;
         cin>>a>>b;
         --a; --b;
-        graph[a].push_back(b);
-        graph[b].push_back(a);
+        g[a].push_back(b);
+        g[b].push_back(a);
     }
-    hld.build(0);
+    hld.build(g, 0);
 
     int q;
     cin>>q;
