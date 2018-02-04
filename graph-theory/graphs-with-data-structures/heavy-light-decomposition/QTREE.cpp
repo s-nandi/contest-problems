@@ -77,7 +77,7 @@ struct heavyLightDecomposition
 {
     int sz, timer = 0;
     bool edgeWeighted;
-    vector <int> parent, sizes, depth, root, value, position, endPosition;
+    vector <int> parent, sizes, depth, root, value, position;
     graph g;
     segmentTree st;
 
@@ -85,7 +85,7 @@ struct heavyLightDecomposition
     {
         sz = s;
         st.initialize(sz);
-        parent.resize(sz, -1), sizes.resize(sz, -1), root.resize(sz), value.resize(sz), position.resize(sz), endPosition.resize(sz);
+        parent.resize(sz, -1), sizes.resize(sz, -1), root.resize(sz), value.resize(sz), position.resize(sz);
         edgeWeighted = e;
     }
 
@@ -113,7 +113,6 @@ struct heavyLightDecomposition
             root[e.to] = e.to == g[curr][0].to ? root[curr] : e.to;
             tour(e.to);
         }
-        endPosition[curr] = timer;
     }
 
     void build(graph &gr, int rt)
