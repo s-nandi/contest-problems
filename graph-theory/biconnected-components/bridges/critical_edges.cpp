@@ -42,7 +42,7 @@ bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <pair<int, i
     return true;
 }
 
-vector <pair<int, int>> articulationBridges(graph &g)
+vector <pair<int, int>> cutEdges(graph &g)
 {
     vector <node> nodes(g.size());
     vector <pair<int, int>> bridges;
@@ -77,7 +77,7 @@ int main()
             g[b].push_back(a);
         }
 
-        auto bridges = articulationBridges(g);
+        auto bridges = cutEdges(g);
         sort(bridges.begin(), bridges.end());
 
         cout<<"Caso #"<<test<<'\n';
