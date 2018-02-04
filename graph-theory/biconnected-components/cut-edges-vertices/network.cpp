@@ -15,7 +15,6 @@ struct node
     int lowlink = -1;
 };
 
-int timer;
 bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <bool> &cutVertex)
 {
     if (nodes[curr].depth != -1)
@@ -49,7 +48,6 @@ vector <int> cutVertices(graph &g)
 {
     vector <node> nodes(g.size());
     vector <bool> cutVertex(g.size());
-    timer = 0;
 
     dfs(g, 0, -1, nodes, cutVertex);
 
