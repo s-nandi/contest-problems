@@ -15,7 +15,6 @@ struct node
     int lowlink = -1;
 };
 
-int timer;
 bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <pair<int, int>> &bridges)
 {
     if (nodes[curr].depth != -1)
@@ -32,11 +31,12 @@ bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <pair<int, i
         if (dfs(g, neighbor, curr, nodes, bridges))
         {
             nodes[curr].lowlink = min(nodes[curr].lowlink, nodes[neighbor].lowlink);
-            if (nodes[neighbor].lowlink == nodes[neighbor].depth)
-            {
-                bridges.push_back({min(curr, neighbor), max(curr, neighbor)});
-            }
         }
+    }
+
+    if (prev != -1 and nodes[curr].lowlink == nodes[curr].depth)
+    {
+        bridges.push_back({min(prev, curr), max(prev, curr)});
     }
 
     return true;
@@ -46,7 +46,6 @@ vector <pair<int, int>> cutEdges(graph &g)
 {
     vector <node> nodes(g.size());
     vector <pair<int, int>> bridges;
-    timer = 0;
 
     dfs(g, 0, -1, nodes, bridges);
 
