@@ -71,13 +71,14 @@ struct edge
     int to, weight;
 };
 
-vector <vector<edge>> graph;
+typedef vector <vector<edge>> graph;
 
 struct heavyLightDecomposition
 {
     int sz, timer = 0;
     bool edgeWeighted;
     vector <int> parent, sizes, depth, root, value, position, endPosition;
+    graph g;
     segmentTree st;
 
     heavyLightDecomposition(int s, bool e)
@@ -91,14 +92,14 @@ struct heavyLightDecomposition
     void reorder(int curr)
     {
         sizes[curr] = 1;
-        for (edge &e: graph[curr]) if (e.to != parent[curr])
+        for (edge &e: g[curr]) if (e.to != parent[curr])
         {
             parent[e.to] = curr, value[e.to] = e.weight;
             reorder(e.to);
             sizes[curr] += sizes[e.to];
-            if (sizes[e.to] > sizes[graph[curr][0].to])
+            if (sizes[e.to] > sizes[g[curr][0].to])
             {
-                swap(e, graph[curr][0]);
+                swap(e, g[curr][0]);
             }
         }
     }
@@ -107,16 +108,17 @@ struct heavyLightDecomposition
     {
         position[curr] = timer++;
         st.initVal(position[curr], value[curr]);
-        for (edge e: graph[curr]) if (e.to != parent[curr])
+        for (edge e: g[curr]) if (e.to != parent[curr])
         {
-            root[e.to] = e.to == graph[curr][0].to ? root[curr] : e.to;
+            root[e.to] = e.to == g[curr][0].to ? root[curr] : e.to;
             tour(e.to);
         }
         endPosition[curr] = timer;
     }
 
-    void build(int rt)
+    void build(graph &gr, int rt)
     {
+        g = gr;
         reorder(rt);
         tour(rt);
         st.build();
@@ -161,7 +163,7 @@ int main()
         int n;
         cin>>n;
 
-        graph.clear(); graph.resize(n);
+        graph g(n);
         heavyLightDecomposition hld(n, true);
         vector <pair <int, int>> ithEdge(n + 1);
 
@@ -170,11 +172,11 @@ int main()
             int a, b, v;
             cin>>a>>b>>v;
             --a; --b;
-            graph[a].push_back({b, v});
-            graph[b].push_back({a, v});
+            g[a].push_back({b, v});
+            g[b].push_back({a, v});
             ithEdge[i + 1] = {a, b};
         }
-        hld.build(0);
+        hld.build(g, 0);
 
         while(true)
         {
