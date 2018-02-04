@@ -1,4 +1,4 @@
-//articulation bridge (tarjan)
+//bridges (tarjan)
 //http://www.spoj.com/problems/EC_P/
 
 #include <iostream>
