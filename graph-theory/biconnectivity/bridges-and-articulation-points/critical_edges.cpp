@@ -1,4 +1,4 @@
-//bridges (tarjan)
+//bridge detection
 //http://www.spoj.com/problems/EC_P/
 
 #include <iostream>
@@ -7,7 +7,13 @@
 
 using namespace std;
 
-typedef vector<vector<int>> graph;
+struct edge
+{
+    int to, id;
+};
+
+typedef vector<vector<edge>> graph;
+typedef pair<int, int> bridge;
 
 struct node
 {
@@ -15,7 +21,7 @@ struct node
     int lowlink = -1;
 };
 
-bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <pair<int, int>> &bridges)
+bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vector <bridge> &bridges)
 {
     if (nodes[curr].depth != -1)
     {
@@ -26,14 +32,14 @@ bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <pair<int, i
     nodes[curr].depth = prev != -1 ? nodes[prev].depth + 1 : 0;
     nodes[curr].lowlink = nodes[curr].depth;
 
-    for (int neighbor: g[curr]) if (neighbor != prev)
+    for (edge e: g[curr]) if (e.id != prevEdge)
     {
-        if (dfs(g, neighbor, curr, nodes, bridges))
+        if (dfs(g, e.to, curr, e.id, nodes, bridges))
         {
-            nodes[curr].lowlink = min(nodes[curr].lowlink, nodes[neighbor].lowlink);
-            if (nodes[neighbor].lowlink == nodes[neighbor].depth)
+            nodes[curr].lowlink = min(nodes[curr].lowlink, nodes[e.to].lowlink);
+            if (nodes[e.to].lowlink == nodes[e.to].depth)
             {
-                bridges.push_back({min(curr, neighbor), max(curr, neighbor)});
+                bridges.push_back({min(curr, e.to), max(curr, e.to)});
             }
         }
     }
@@ -44,9 +50,9 @@ bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <pair<int, i
 vector <pair<int, int>> cutEdges(graph &g)
 {
     vector <node> nodes(g.size());
-    vector <pair<int, int>> bridges;
+    vector <bridge> bridges;
 
-    dfs(g, 0, -1, nodes, bridges);
+    dfs(g, 0, -1, -1, nodes, bridges);
 
     return bridges;
 }
@@ -71,8 +77,8 @@ int main()
             int a, b;
             cin>>a>>b;
             --a; --b;
-            g[a].push_back(b);
-            g[b].push_back(a);
+            g[a].push_back({b, i});
+            g[b].push_back({a, i});
         }
 
         auto bridges = cutEdges(g);
