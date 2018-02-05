@@ -47,10 +47,17 @@ bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vecto
     return true;
 }
 
-vector <bool> cutEdges(graph &g, int numEdges)
+vector <bool> cutEdges(graph &g)
 {
-    vector <node> nodes(g.size());
-    vector <bool> bridge(numEdges);
+    int n = g.size(), m = 0;
+    for (int i = 0; i < n; i++)
+    {
+        m += g[i].size();
+    }
+    m/= 2;
+
+    vector <node> nodes(n);
+    vector <bool> bridge(m);
 
     dfs(g, 0, -1, -1, nodes, bridge);
 
@@ -83,7 +90,7 @@ int main()
             edges.push_back({a, b});
         }
 
-        auto bridge = cutEdges(g, m);
+        auto bridge = cutEdges(g);
         vector <edgeObject> sol;
 
         for (int i = 0; i < m; i++) if (bridge[i])
