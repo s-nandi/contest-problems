@@ -48,24 +48,31 @@ bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vecto
     return true;
 }
 
-bool isEdgeBiconnected(graph &g, int numEdges, int &mask)
+bool isEdgeBiconnected(graph &g, int &mask)
 {
-    vector <node> nodes(g.size());
-    vector <bool> bridge(numEdges), visited(g.size());
+    int n = g.size(), m = 0;
+    for (int i = 0; i < n; i++)
+    {
+        m += g[i].size();
+    }
+    m /= 2;
+
+    vector <node> nodes(n);
+    vector <bool> bridge(m), visited(n);
 
     dfs(g, 0, -1, -1, nodes, bridge, visited, mask);
 
     int numBridges = 0, numVisited = 0;
-    for (int i = 0; i < g.size(); i++) if (visited[i])
+    for (int i = 0; i < n; i++) if (visited[i])
     {
         numVisited++;
     }
-    for (int i = 0; i < numEdges; i++) if (bridge[i])
+    for (int i = 0; i < m; i++) if (bridge[i])
     {
         numBridges++;
     }
 
-    return numBridges == 0 and numVisited == g.size();
+    return numBridges == 0 and numVisited == n;
 }
 
 int main()
@@ -103,7 +110,7 @@ int main()
                 }
             }
 
-            if (isEdgeBiconnected(g, m, mask))
+            if (isEdgeBiconnected(g, mask))
             {
                 bestCost = min(bestCost, currCost);
             }
