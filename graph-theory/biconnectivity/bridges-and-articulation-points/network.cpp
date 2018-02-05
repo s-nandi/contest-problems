@@ -1,4 +1,4 @@
-//articulation points (tarjan), string processing
+//finding cut vertices, string processing
 //https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=251
 
 #include <iostream>
@@ -7,7 +7,12 @@
 
 using namespace std;
 
-typedef vector<vector<int>> graph;
+struct edge
+{
+    int to, id;
+};
+
+typedef vector<vector<edge>> graph;
 
 struct node
 {
@@ -15,7 +20,7 @@ struct node
     int lowlink = -1;
 };
 
-bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <bool> &cutVertex)
+bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vector <bool> &cutVertex)
 {
     if (nodes[curr].depth != -1)
     {
@@ -27,14 +32,14 @@ bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <bool> &cutV
     nodes[curr].lowlink = nodes[curr].depth;
 
     int outEdge = 0;
-    for (int neighbor: g[curr]) if (neighbor != prev)
+    for (edge e: g[curr]) if (e.id != prevEdge)
     {
-        if (dfs(g, neighbor, curr, nodes, cutVertex))
+        if (dfs(g, e.to, curr, e.id, nodes, cutVertex))
         {
-            nodes[curr].lowlink = min(nodes[curr].lowlink, nodes[neighbor].lowlink);
+            nodes[curr].lowlink = min(nodes[curr].lowlink, nodes[e.to].lowlink);
             outEdge++;
 
-            if (prev != -1 ? nodes[neighbor].lowlink >= nodes[curr].depth : outEdge > 1)
+            if (prev != -1 ? nodes[e.to].lowlink >= nodes[curr].depth : outEdge > 1)
             {
                 cutVertex[curr] = true;
             }
@@ -49,7 +54,10 @@ vector <int> cutVertices(graph &g)
     vector <node> nodes(g.size());
     vector <bool> cutVertex(g.size());
 
-    dfs(g, 0, -1, nodes, cutVertex);
+    for (int i = 0; i < g.size(); i++) if (nodes[i].depth == -1)
+    {
+        dfs(g, i, -1, -1, nodes, cutVertex);
+    }
 
     vector <int> result;
 
@@ -73,6 +81,7 @@ int main()
         cin.ignore();
 
         graph g(n);
+        int index = 0;
         while (true)
         {
             string s;
@@ -80,13 +89,14 @@ int main()
             if (s[0] ==  '0') break;
 
             istringstream iss(s);
-            int i, j;
-            iss>>i; --i;
-            while(iss >> j)
+            int a, b;
+            iss>>a; --a;
+            while(iss >> b)
             {
-                --j;
-                g[i].push_back(j);
-                g[j].push_back(i);
+                --b;
+                g[a].push_back({b, index});
+                g[b].push_back({a, index});
+                index++;
             }
         }
 
