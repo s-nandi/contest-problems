@@ -6,7 +6,6 @@
 
 using namespace std;
 
-#define ll long long
 #define INF 1231231234
 
 struct edge
@@ -22,8 +21,7 @@ struct node
     int lowlink = -1;
 };
 
-int numBridges, numReached;
-bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, int &mask)
+bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vector <bool> &bridge, vector <bool> &visited, int &mask)
 {
     if (nodes[curr].depth != -1)
     {
@@ -33,30 +31,41 @@ bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, int &
 
     nodes[curr].depth = prev != -1 ? nodes[prev].depth + 1 : 0;
     nodes[curr].lowlink = nodes[curr].depth;
+    visited[curr] = true;
 
     for (edge &e: g[curr]) if (e.id != prevEdge and mask & (1 << e.id))
     {
-        if (dfs(g, e.to, curr, e.id, nodes, mask))
+        if (dfs(g, e.to, curr, e.id, nodes, bridge, visited, mask))
         {
             nodes[curr].lowlink = min(nodes[curr].lowlink, nodes[e.to].lowlink);
             if (nodes[e.to].lowlink == nodes[e.to].depth)
             {
-                numBridges++;
+                bridge[e.id] = true;
             }
         }
     }
-    numReached++;
+
     return true;
 }
 
-bool isEdgeBiconnected(graph &g, int &mask)
+bool isEdgeBiconnected(graph &g, int numEdges, int &mask)
 {
     vector <node> nodes(g.size());
+    vector <bool> bridge(numEdges), visited(g.size());
 
-    numBridges = 0, numReached = 0;
-    dfs(g, 0, -1, -1, nodes, mask);
+    dfs(g, 0, -1, -1, nodes, bridge, visited, mask);
 
-    return numBridges == 0 and numReached == g.size();
+    int numBridges = 0, numVisited = 0;
+    for (int i = 0; i < g.size(); i++) if (visited[i])
+    {
+        numVisited++;
+    }
+    for (int i = 0; i < numEdges; i++) if (bridge[i])
+    {
+        numBridges++;
+    }
+
+    return numBridges == 0 and numVisited == g.size();
 }
 
 int main()
@@ -71,7 +80,7 @@ int main()
         if (n == 0 and m == 0) break;
 
         graph g(n);
-        vector <ll> costs(m);
+        vector <int> costs(m);
 
         for (int i = 0; i < m; i++)
         {
@@ -82,10 +91,10 @@ int main()
             g[b].push_back({a, i});
         }
 
-        ll bestCost = INF;
+        int bestCost = INF;
         for (int mask = 0; mask < (1 << m); mask++)
         {
-            ll currCost = 0;
+            int currCost = 0;
             for (int i = 0; i < m; i++)
             {
                 if (mask & (1 << i))
@@ -94,7 +103,7 @@ int main()
                 }
             }
 
-            if (isEdgeBiconnected(g, mask))
+            if (isEdgeBiconnected(g, m, mask))
             {
                 bestCost = min(bestCost, currCost);
             }
