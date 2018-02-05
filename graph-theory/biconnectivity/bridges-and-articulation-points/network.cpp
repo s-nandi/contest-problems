@@ -51,17 +51,18 @@ bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vecto
 
 vector <int> cutVertices(graph &g)
 {
-    vector <node> nodes(g.size());
-    vector <bool> cutVertex(g.size());
+    int n = g.size();
+    vector <node> nodes(n);
+    vector <bool> cutVertex(n);
 
-    for (int i = 0; i < g.size(); i++) if (nodes[i].depth == -1)
+    for (int i = 0; i < n; i++) if (nodes[i].depth == -1)
     {
         dfs(g, i, -1, -1, nodes, cutVertex);
     }
 
     vector <int> result;
 
-    for (int i = 0; i < g.size(); i++)
+    for (int i = 0; i < n; i++)
     {
         if (cutVertex[i])
         {
