@@ -11,8 +11,7 @@ using namespace std;
 
 struct edge
 {
-    int to;
-    bool isBridge;
+    int to, id;
 };
 
 typedef vector<vector<edge>> graph;
@@ -23,7 +22,7 @@ struct node
     int lowlink = -1;
 };
 
-bool dfs(graph &g, int curr, int prev, vector <node> &nodes)
+bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <bool> &bridge)
 {
     if (nodes[curr].depth != -1)
     {
@@ -36,12 +35,12 @@ bool dfs(graph &g, int curr, int prev, vector <node> &nodes)
 
     for (edge &e: g[curr]) if (e.to != prev)
     {
-        if (dfs(g, e.to, curr, nodes))
+        if (dfs(g, e.to, curr, nodes, bridge))
         {
             nodes[curr].lowlink = min(nodes[curr].lowlink, nodes[e.to].lowlink);
             if (nodes[e.to].lowlink == nodes[e.to].depth)
             {
-                e.isBridge = true;
+                bridge[e.id] = true;
             }
         }
     }
@@ -49,35 +48,43 @@ bool dfs(graph &g, int curr, int prev, vector <node> &nodes)
     return true;
 }
 
-void categorize(graph &g, int curr, vector <int> &visited, vector <vector<int>> &components)
+void categorize(graph &g, int curr, vector <bool> &bridge, vector <bool> &visited, vector <vector<int>> &components)
 {
     if (visited[curr]) return;
-    visited[curr] = 1;
+    visited[curr] = true;
 
     components.rbegin() -> push_back(curr);
 
-    for (edge e: g[curr]) if (!visited[e.to] and !e.isBridge)
+    for (edge e: g[curr]) if (!visited[e.to] and !bridge[e.id])
     {
-        categorize(g, e.to, visited, components);
+        categorize(g, e.to, bridge, visited, components);
     }
 }
 
 vector <vector<int>> tarjanEdgeBCC(graph &g)
 {
-    vector <node> nodes(g.size());
-
-    for (int i = 0; i < g.size(); i++) if (nodes[i].depth == -1)
+    int n = g.size(), m = 0;
+    for (int i = 0; i < n; i++)
     {
-        dfs(g, i, -1, nodes);
+        m += g[i].size();
+    }
+    m /= 2;
+
+    vector <node> nodes(n);
+    vector <bool> bridge(m);
+
+    for (int i = 0; i < n; i++) if (nodes[i].depth == -1)
+    {
+        dfs(g, i, -1, nodes, bridge);
     }
 
-    vector <int> visited(g.size());
+    vector <bool> visited(n);
     vector <vector<int>> components;
 
-    for (int i = 0; i < g.size(); i++) if (!visited[i])
+    for (int i = 0; i < n; i++) if (!visited[i])
     {
         components.push_back({});
-        categorize(g, i, visited, components);
+        categorize(g, i, bridge, visited, components);
     }
 
     return components;
@@ -100,8 +107,8 @@ int main()
         int a, b;
         cin>>a>>b;
         --a; --b;
-        g[a].push_back({b, false});
-        g[b].push_back({a, false});
+        g[a].push_back({b, i});
+        g[b].push_back({a, i});
     }
 
     auto components = tarjanEdgeBCC(g);
