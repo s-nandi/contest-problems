@@ -22,7 +22,7 @@ struct node
     int lowlink = -1;
 };
 
-bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <bool> &bridge)
+bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vector <bool> &bridge)
 {
     if (nodes[curr].depth != -1)
     {
@@ -33,9 +33,9 @@ bool dfs(graph &g, int curr, int prev, vector <node> &nodes, vector <bool> &brid
     nodes[curr].depth = prev != -1 ? nodes[prev].depth + 1 : 0;
     nodes[curr].lowlink = nodes[curr].depth;
 
-    for (edge &e: g[curr]) if (e.to != prev)
+    for (edge &e: g[curr]) if (e.id != prevEdge)
     {
-        if (dfs(g, e.to, curr, nodes, bridge))
+        if (dfs(g, e.to, curr, e.id, nodes, bridge))
         {
             nodes[curr].lowlink = min(nodes[curr].lowlink, nodes[e.to].lowlink);
             if (nodes[e.to].lowlink == nodes[e.to].depth)
@@ -75,7 +75,7 @@ vector <vector<int>> tarjanEdgeBCC(graph &g)
 
     for (int i = 0; i < n; i++) if (nodes[i].depth == -1)
     {
-        dfs(g, i, -1, nodes, bridge);
+        dfs(g, i, -1, -1, nodes, bridge);
     }
 
     vector <bool> visited(n);
