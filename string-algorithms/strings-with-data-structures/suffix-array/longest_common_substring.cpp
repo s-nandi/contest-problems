@@ -1,5 +1,5 @@
 //suffix array (radix sort), kasai's algorithm (range lcp queries), longest common subsequence, sparse table, two pointer method
-//http://www.spoj.com/problems/SARRAY/
+//http://www.spoj.com/problems/LONGCS/
 
 #include <iostream>
 #include <vector>
@@ -46,6 +46,8 @@ struct sparseTable
     }
 };
 
+typedef vector <int> intString;
+
 struct element
 {
     pair <int, int> ranking;
@@ -80,9 +82,9 @@ struct suffixArray
     vector <element> suffix;
     sparseTable sp;
 
-    suffixArray(string &s)
+    suffixArray(intString &s)
     {
-        sz = s.length();
+        sz = s.size();
         while (1 << h < sz) h++;
         numBuckets = 0;
 
@@ -90,7 +92,7 @@ struct suffixArray
 
         for (int i = 0; i < sz; i++)
         {
-            ranks[i] = int(s[i]);
+            ranks[i] = s[i];
             numBuckets = max(numBuckets, ranks[i] + 1);
         }
         for (int k = 1, len = 1; k <= h; k++, len <<= 1)
@@ -116,7 +118,7 @@ struct suffixArray
         sp.build();
     }
 
-    void kasaiLCP(string &s)
+    void kasaiLCP(intString &s)
     {
         for(int i = 0, k = 0; i < sz; i++, k = max(0, k - 1))
         {
@@ -141,26 +143,32 @@ int longestCommonSubstring(vector <string> &v)
 {
     int n = v.size();
 
-    string concat = "";
+    intString concat;
     for (int i = 0; i < n; i++)
     {
-        concat += v[i] + ((i & 1) ? "!" : "&");
+        for (char c: v[i])
+        {
+            concat.push_back(c);
+        }
+        concat.push_back(256 + i);
     }
 
-    suffixArray sa(concat);
-    vector <int> categories(concat.length());
+    int m = concat.size();
 
-    for (int i = 1; i < concat.length(); i++)
+    suffixArray sa(concat);
+    vector <int> categories(m);
+
+    for (int i = 1; i < m; i++)
     {
-        categories[i] = (concat[i] != '!' and concat[i] != '&') ? categories[i - 1] : categories[i - 1] + 1;
+        categories[i] = (concat[i] < 256) ? categories[i - 1] : categories[i - 1] + 1;
     }
 
     vector <int> counts(n);
     int sol = -1;
 
-    for (int l = 0, r = 0, active = 0; l < concat.length(); l++)
+    for (int l = 0, r = 0, active = 0; l < m; l++)
     {
-        while (r < concat.length() and (r <= l or active < n))
+        while (r < m and (r <= l or active < n))
         {
             int rPartition = categories[sa.ordered[r]];
             if (++counts[rPartition] == 1) active++;
