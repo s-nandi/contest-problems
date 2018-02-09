@@ -1,5 +1,6 @@
 //suffix array, kasai's algorithm, find # of distinct substrings
-//http://www.spoj.com/problems/DISUBSTR/
+//http://acm.timus.ru/problem.aspx?space=1&num=1590
+//2008 NEERC Regional
 
 #include <iostream>
 #include <vector>
@@ -7,14 +8,12 @@
 
 using namespace std;
 
-#define MAXN 1005
-
 struct element
 {
     pair <int, int> ranking;
     int index;
 
-    bool operator < (element o) const
+    bool operator < (const element &o) const
     {
         return ranking != o.ranking ? ranking < o.ranking : index < o.index;
     }
@@ -35,7 +34,7 @@ struct suffixArray
 
         for (int i = 0; i < sz; i++)
         {
-            ranks[i] = int(s[i]);
+            ranks[i] = s[i] - 'a';
         }
         for (int k = 1, len = 1; k <= h; k++, len <<= 1)
         {
@@ -76,21 +75,17 @@ struct suffixArray
 
 int main()
 {
-    int n;
-    cin>>n;
+    string s;
+    cin>>s;
 
-    for (int i = 0; i < n; i++)
+    suffixArray sa(s);
+
+    int sol = 0;
+    for (int i = 0; i < s.length(); i++)
     {
-        string s;
-        cin>>s;
-
-        suffixArray sa(s);
-
-        int sol = 0;
-        for (int i = 0; i < s.length(); i++)
-        {
-            sol += (s.length() - sa.ordered[i]) - sa.lcp[i];
-        }
-        cout<<sol<<'\n';
+        sol += (s.length() - sa.ordered[i]) - sa.lcp[i];
     }
+    cout<<sol<<'\n';
+
+    return 0;
 }
