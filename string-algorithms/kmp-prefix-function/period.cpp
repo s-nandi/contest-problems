@@ -42,24 +42,14 @@ int main()
         cin>>s;
 
         auto pf = prefixFunction(s);
-        vector <int> cycleLength[n + 1];
-
-        for (int i = 1; i <= n; i++)
-        {
-            cycleLength[i].push_back(i - 1);
-        }
 
         cout<<"Test case #"<<test<<'\n';
         for (int i = 0; i < n; i++)
         {
-            if (pf[i] != 0)
+            int len = i + 1 - pf[i];
+            if (pf[i] != 0 and (i + 1) % len == 0)
             {
-                int len = i + 1 - pf[i];
-                if (cycleLength[len].rbegin()[0] == pf[i] - 1)
-                {
-                    cout<<i + 1<<" "<<(i + 1) / len<<'\n';
-                    cycleLength[len].push_back(i);
-                }
+                cout<<i + 1<<" "<<(i + 1) / len<<'\n';
             }
         }
     }
