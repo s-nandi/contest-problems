@@ -6,9 +6,11 @@
 
 using namespace std;
 
+#define MAXN 1000005
+
 struct trie
 {
-    int elements[1000005][26];
+    int elements[MAXN][26];
     int numNodes;
 
     trie()
