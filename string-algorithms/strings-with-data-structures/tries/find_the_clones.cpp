@@ -9,6 +9,7 @@
 using namespace std;
 
 #define MAXN 400001
+#define alpha 4
 
 int mapping(char c)
 {
@@ -18,34 +19,49 @@ int mapping(char c)
     else return 3;
 }
 
+struct node
+{
+    int to[alpha];
+    int countEnd;
+
+    node()
+    {
+        memset(to, -1, sizeof(to));
+        countEnd = 0;
+    }
+};
+
 struct trie
 {
-    int elements[MAXN][4];
-    int counts[MAXN];
+    vector <node> elements;
     int numNodes;
 
-    trie()
+    vector <int> tally;
+
+    trie(int numWords)
     {
-        numNodes = 0;
-        memset(elements, -1, sizeof(elements));
-        memset(counts, 0, sizeof(counts));
+        elements.resize(MAXN);
+        numNodes = 1;
+
+        tally.resize(numWords + 1);
+        tally[0] = numWords;
     }
 
-    void addWord(string &s, vector <int> &tally)
+    void addWord(string &s)
     {
         int curr = 0;
         for (char c: s)
         {
             int mc = mapping(c);
-            if (elements[curr][mc] == -1)
+            if (elements[curr].to[mc] == -1)
             {
-                elements[curr][mc] = ++numNodes;
+                elements[curr].to[mc] = numNodes++;
             }
-            curr = elements[curr][mc];
+            curr = elements[curr].to[mc];
         }
 
-        tally[counts[curr]]--;
-        tally[++counts[curr]]++;
+        tally[elements[curr].countEnd]--;
+        tally[++elements[curr].countEnd]++;
     }
 };
 
@@ -61,22 +77,19 @@ int main()
 
         if (n == 0 and m == 0) break;
 
-        trie tr;
-
-        vector <int> tally(n + 1);
-        tally[0] = n;
+        trie tr(n);
 
         for (int i = 0; i < n; i++)
         {
             string s;
             cin>>s;
 
-            tr.addWord(s, tally);
+            tr.addWord(s);
         }
 
         for (int i = 1; i <= n; i++)
         {
-            cout<<tally[i]<<'\n';
+            cout<<tr.tally[i]<<'\n';
         }
     }
 
