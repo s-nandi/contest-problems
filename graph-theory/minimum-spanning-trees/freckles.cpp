@@ -48,11 +48,11 @@ struct disjointSetUnion
     }
 };
 
-double kruskal(vector <edge> &edges, int numNodes)
+double kruskal(vector <edge> &edges, int n)
 {
     sort(edges.begin(), edges.end());
 
-    disjointSetUnion dsu(numNodes);
+    disjointSetUnion dsu(n);
     double cost = 0.0;
     int numEdges = 0;
 
@@ -62,7 +62,7 @@ double kruskal(vector <edge> &edges, int numNodes)
         {
             dsu.unionElements(e.i, e.j);
             cost += e.d;
-            if (++numEdges == numNodes - 1) break;
+            if (++numEdges == n - 1) break;
         }
     }
 
