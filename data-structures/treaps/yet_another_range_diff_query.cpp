@@ -1,10 +1,9 @@
-//treaps (explicit & implicit), min and max difference queries, insert/delete updates
+//treaps, min and max difference in interval queries, insert/delete updates
 //http://www.spoj.com/problems/TREAP/
 
 #include <iostream>
 #include <vector>
-#include <cstdlib>
-#include <ctime>
+#include <tuple>
 
 using namespace std;
 
@@ -21,7 +20,7 @@ struct node
         value = k, priority = (rand() << 16) ^ rand(), l = NULL, r = NULL, sz = 1, minElement = k, maxElement = k, minDifference = INF;
     }
 
-    void refresh()
+    node* refresh()
     {
         sz = 1, maxElement = value, minElement = value, minDifference = INF;
         if (l)
@@ -38,6 +37,7 @@ struct node
             maxElement = max(maxElement, r -> maxElement);
             minDifference = min(min(minDifference, r -> minDifference), (r -> minElement) - value);
         }
+        return this;
     }
 };
 
@@ -50,27 +50,41 @@ struct treap
         root = NULL;
     }
 
-    void split(node* curr, int v, node* &l, node* &r, bool byKey)
+    pair <node*, node*> splitValue(node* curr, int value)
     {
-        l = NULL, r = NULL;
-        if (!curr) return;
+        if (!curr) return {NULL, NULL};
 
-        int leftCmp = byKey ? curr -> value : getSz(curr -> l);
-        if (leftCmp <= v)
+        pair <node*, node*> res;
+        if (curr -> value <= value)
         {
-            split(curr -> r, byKey ? v : v - leftCmp - 1, curr -> r, r, byKey);
-            l = curr;
+            tie(curr -> r, res.second) = splitValue(curr -> r, value);
+            res.first = curr -> refresh();
         }
         else
         {
-            split(curr -> l, v, l, curr -> l, byKey);
-            r = curr;
+            tie(res.first, curr -> l) = splitValue(curr -> l, value);
+            res.second = curr -> refresh();
         }
-        curr -> refresh();
+        return res;
     }
 
-    void splitKey(node* curr, int key, node* &l, node* &r) { split(curr, key, l, r, true); }
-    void splitIndex(node* curr, int index, node* &l, node* &r) { split(curr, index, l, r, false); }
+    pair <node*, node*> splitIndex(node* curr, int index)
+    {
+        if (!curr) return {NULL, NULL};
+
+        pair <node*, node*> res;
+        if (getSz(curr -> l) <= index)
+        {
+            tie(curr -> r, res.second) = splitIndex(curr -> r, index - getSz(curr -> l) - 1);
+            res.first = curr -> refresh();
+        }
+        else
+        {
+            tie(res.first, curr -> l) = splitIndex(curr -> l, index);
+            res.second = curr -> refresh();
+        }
+        return res;
+    }
 
     node* meld(node* &a, node* &b)
     {
@@ -79,13 +93,13 @@ struct treap
         if (a -> priority >= b -> priority)
         {
             a -> r = meld(a -> r, b);
-            a -> refresh();
+            a = a -> refresh();
             return a;
         }
         else
         {
             b -> l = meld(a, b -> l);
-            b -> refresh();
+            b = b -> refresh();
             return b;
         }
     }
@@ -93,8 +107,8 @@ struct treap
     void insert(int k)
     {
         node *a, *b, *c, *nn = new node(k);
-        splitKey(root, k - 1, a, b);
-        splitKey(b, k, b, c);
+        tie(a, b) = splitValue(root, k - 1);
+        tie(b, c) = splitValue(b, k);
         root = meld(a, nn);
         root = meld(root, c);
     }
@@ -102,8 +116,8 @@ struct treap
     void erase(int k)
     {
         node *a, *b, *c;
-        splitKey(root, k - 1, a, b);
-        splitKey(b, k, b, c);
+        tie(a, b) = splitValue(root, k - 1);
+        tie(b, c) = splitValue(b, k);
         root = meld(a, c);
     }
 
@@ -113,8 +127,8 @@ struct treap
 
         if (l == r) return -1;
 
-        splitIndex(root, l - 1, a, b);
-        splitIndex(b, r - l, b, c);
+        tie(a, b) = splitIndex(root, l - 1);
+        tie(b, c) = splitIndex(b, r - l);
 
         int res = !type ? (b -> maxElement - b -> minElement) : b -> minDifference;
 
