@@ -59,16 +59,17 @@ struct treap
     node* meld(node* &a, node* &b)
     {
         if (!a or !b) return a ? a : b;
+
         else if (a -> priority >= b -> priority)
         {
             a -> r = meld(a -> r, b);
-            a = a -> refresh();
+            a -> refresh();
             return a;
         }
         else
         {
             b -> l = meld(a, b -> l);
-            b = b -> refresh();
+            b -> refresh();
             return b;
         }
     }
