@@ -1,4 +1,4 @@
-//treaps, min and max difference in interval queries, insert/delete updates
+//treaps, min and max difference queries, insert/delete updates
 //http://www.spoj.com/problems/TREAP/
 
 #include <iostream>
@@ -93,13 +93,13 @@ struct treap
         if (a -> priority >= b -> priority)
         {
             a -> r = meld(a -> r, b);
-            a = a -> refresh();
+            a -> refresh();
             return a;
         }
         else
         {
             b -> l = meld(a, b -> l);
-            b = b -> refresh();
+            b -> refresh();
             return b;
         }
     }
