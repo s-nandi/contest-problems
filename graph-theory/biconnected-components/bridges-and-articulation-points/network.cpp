@@ -49,9 +49,8 @@ bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vecto
     return true;
 }
 
-vector <int> cutVertices(graph &g)
+vector <int> cutVertices(graph &g, int n)
 {
-    int n = g.size();
     vector <node> nodes(n);
     vector <bool> cutVertex(n);
 
@@ -101,7 +100,7 @@ int main()
             }
         }
 
-        auto res = cutVertices(g);
+        auto res = cutVertices(g, n);
         cout<<res.size()<<'\n';
     }
 
