@@ -52,22 +52,12 @@ bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vecto
     return true;
 }
 
-vector <edgeObject> correctedEdges(graph &g, vector <edgeObject> &edges)
+void correctEdges(graph &g, int n, vector <edgeObject> &edges)
 {
-    int n = g.size(), m = 0;
-    for (int i = 0; i < n; i++)
-    {
-        m += g[i].size();
-    }
-    m /= 2;
-
     vector <node> nodes(n);
-    hasBridge = false;
 
+    bool hasBridge = false;
     dfs(g, 0, -1, -1, nodes, edges);
-
-    if (hasBridge) return {};
-    else return edges;
 }
 
 int main()
@@ -91,14 +81,14 @@ int main()
         edges[i] = {a, b};
     }
 
-    edges = correctedEdges(g, edges);
+    correctEdges(g, n, edges);
 
-    if (edges.size() == 0) cout<<0<<'\n';
+    if (hasBridge) cout<<0<<'\n';
     else
     {
-        for (int i = 0; i < m; i++)
+        for (const edgeObject &e: edges)
         {
-            cout<<edges[i].first + 1<<" "<<edges[i].second + 1<<'\n';
+            cout<<e.first + 1<<" "<<e.second + 1<<'\n';
         }
     }
 
