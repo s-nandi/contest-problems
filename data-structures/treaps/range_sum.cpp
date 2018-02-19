@@ -3,8 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include <cstdlib>
-#include <ctime>
+#include <tuple>
 
 using namespace std;
 
@@ -21,11 +20,12 @@ struct node
         key = k, priority = (rand() << 16) ^ rand(), l = NULL, r = NULL, sz = 1, sum = k;
     }
 
-    void refresh()
+    node* refresh()
     {
         sz = 1, sum = key;
         if (l) sz += l -> sz, sum += l -> sum;
         if (r) sz += r -> sz, sum += r -> sum;
+        return this;
     }
 };
 
@@ -38,23 +38,22 @@ struct treap
         root = NULL;
     }
 
-    void splitIndex(node* curr, int index, node* &l, node* &r)
+    pair <node*, node*> splitIndex(node* curr, int index)
     {
-        l = NULL, r = NULL;
-        if (!curr) return;
+        if (!curr) return {NULL, NULL};
 
-        int lSize = getSz(curr -> l);
-        if (lSize <= index)
+        pair <node*, node*> res;
+        if (getSz(curr -> l) <= index)
         {
-            splitIndex(curr -> r, index - lSize - 1, curr -> r, r);
-            l = curr;
+            tie(curr -> r, res.second) = splitIndex(curr -> r, index - getSz(curr -> l) - 1);
+            res.first = curr -> refresh();
         }
         else
         {
-            splitIndex(curr -> l, index, l, curr -> l);
-            r = curr;
+            tie(res.first, curr -> l) = splitIndex(curr -> l, index);
+            res.second = curr -> refresh();
         }
-        curr -> refresh();
+        return res;
     }
 
     node* meld(node* &a, node* &b)
@@ -63,13 +62,13 @@ struct treap
         else if (a -> priority >= b -> priority)
         {
             a -> r = meld(a -> r, b);
-            a -> refresh();
+            a = a -> refresh();
             return a;
         }
         else
         {
             b -> l = meld(a, b -> l);
-            b -> refresh();
+            b = b -> refresh();
             return b;
         }
     }
@@ -89,8 +88,8 @@ struct treap
     ll query(int l, int r)
     {
         node *a, *b, *c;
-        splitIndex(root, l - 1, a, b);
-        splitIndex(b, r - l, b, c);
+        tie(a, b) = splitIndex(root, l - 1);
+        tie(b, c) = splitIndex(b, r - l);
 
         ll res = b -> sum;
 
