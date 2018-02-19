@@ -1,11 +1,8 @@
-//minimum spanning tree (kruskal), disjoint set union
-//https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=975
-
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <iomanip>
 #include <cmath>
-#include <algorithm>
 
 using namespace std;
 
@@ -25,8 +22,7 @@ struct edge
     bool operator < (edge o) const
     {
         if (d != o.d) return d < o.d;
-        if (i != o.i) return i < o.i;
-        return j < o.j;
+        else return make_pair(i, j) < make_pair(o.i, o.j);
     }
 };
 
@@ -52,12 +48,33 @@ struct disjointSetUnion
     }
 };
 
+double kruskal(vector <edge> &edges, int numNodes)
+{
+    sort(edges.begin(), edges.end());
+
+    disjointSetUnion dsu(numNodes);
+    double cost = 0.0;
+    int numEdges = 0;
+
+    for (const edge &e: edges)
+    {
+        if (dsu.findRoot(e.i) != dsu.findRoot(e.j))
+        {
+            dsu.unionElements(e.i, e.j);
+            cost += e.d;
+            if (++numEdges == numNodes - 1) break;
+        }
+    }
+
+    return cost;
+}
+
 int main()
 {
     int T;
     cin>>T;
 
-    while(T)
+    while(T--)
     {
         int n;
         cin>>n;
@@ -75,29 +92,11 @@ int main()
                 edges.push_back({i, j, points[i].distance(points[j])});
             }
         }
-        sort(edges.begin(), edges.end());
 
-        disjointSetUnion dsu(n);
-        double cost = 0.0;
-        int numEdges = 0;
-
-        for (edge e: edges)
-        {
-            if (dsu.findRoot(e.i) != dsu.findRoot(e.j))
-            {
-                dsu.unionElements(e.i, e.j);
-                cost += e.d;
-                numEdges++;
-                if (numEdges == n - 1)
-                    break;
-            }
-        }
+        double cost = kruskal(edges, n);
 
         cout<<setprecision(2)<<fixed<<cost<<'\n';
-        if (--T)
-        {
-            cout<<'\n';
-        }
+        if (T) cout<<'\n';
     }
 
     return 0;
