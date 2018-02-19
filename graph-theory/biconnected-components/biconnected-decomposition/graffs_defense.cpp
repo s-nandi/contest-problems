@@ -61,15 +61,8 @@ void categorize(graph &g, int curr, vector <bool> &bridge, vector <bool> &visite
     }
 }
 
-vector <vector<int>> tarjanEdgeBCC(graph &g)
+vector <vector<int>> tarjanEdgeBCC(graph &g, int n, int m)
 {
-    int n = g.size(), m = 0;
-    for (int i = 0; i < n; i++)
-    {
-        m += g[i].size();
-    }
-    m /= 2;
-
     vector <node> nodes(n);
     vector <bool> bridge(m);
 
@@ -111,7 +104,7 @@ int main()
         g[b].push_back({a, i});
     }
 
-    auto components = tarjanEdgeBCC(g);
+    auto components = tarjanEdgeBCC(g, n, m);
 
     ll totalChoices = ((ll) n * (n - 1)) / 2;
     ll badChoices = 0;
