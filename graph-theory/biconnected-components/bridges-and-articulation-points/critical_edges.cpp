@@ -1,4 +1,4 @@
-//finding bridges
+//bridge finding
 //http://www.spoj.com/problems/EC_P/
 
 #include <iostream>
@@ -47,15 +47,8 @@ bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vecto
     return true;
 }
 
-vector <bool> cutEdges(graph &g)
+vector <bool> cutEdges(graph &g, int n, int m)
 {
-    int n = g.size(), m = 0;
-    for (int i = 0; i < n; i++)
-    {
-        m += g[i].size();
-    }
-    m/= 2;
-
     vector <node> nodes(n);
     vector <bool> bridge(m);
 
@@ -90,7 +83,7 @@ int main()
             edges.push_back({a, b});
         }
 
-        auto bridge = cutEdges(g);
+        auto bridge = cutEdges(g, n, m);
         vector <edgeObject> sol;
 
         for (int i = 0; i < m; i++) if (bridge[i])
