@@ -83,7 +83,7 @@ int main()
 
                 int w = sum[mask] / h;
 
-                for (int m1 = (mask - 1) % mask; m1 > 0; m1 = (m1 - 1) & mask)
+                for (int m1 = mask; m1 > 0; m1 = (m1 - 1) & mask)
                 {
                     int m2 = mask ^ m1;
                     if (m1 < m2) break;
