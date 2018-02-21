@@ -1,4 +1,4 @@
-//suffix array (radix sort), kasai's algorithm (range lcp queries), longest common subsequence, sparse table, two pointer method
+//suffix array (radix sort), kasai's algorithm (range lcp queries), longest common substring of k strings, sparse table, two pointer method
 //http://www.spoj.com/problems/LONGCS/
 
 #include <iostream>
