@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include <map>
+#include <set>
 
 using namespace std;
 
@@ -23,24 +23,21 @@ int main()
         cin>>a[i];
     }
 
-    map <int, int> current;
+    multiset <int> current;
     vector <ll> excluded(n);
 
     ll acc = 0;
     for (int i = 0; i < n; i++)
     {
         acc += a[i];
-        current[a[i]]++;
+        current.insert(a[i]);
 
         excluded[i] = acc;
         if (i >= c - 1)
         {
-            ll f = a[i - c + 1];
-
-            excluded[i] -= (current.begin() -> first);
-            acc -= f;
-
-            if (--current[f] == 0) current.erase(f);
+            excluded[i] -= *current.begin();
+            acc -= a[i - c + 1];
+            current.erase(current.find(a[i - c + 1]));
         }
     }
 
