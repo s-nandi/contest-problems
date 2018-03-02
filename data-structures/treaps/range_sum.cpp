@@ -60,7 +60,7 @@ struct treap
     {
         if (!a or !b) return a ? a : b;
 
-        else if (a -> priority >= b -> priority)
+        if (a -> priority >= b -> priority)
         {
             a -> r = meld(a -> r, b);
             a -> refresh();
