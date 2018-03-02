@@ -33,6 +33,20 @@ struct node
         return this;
     }
 
+    void pushLazy(int lb, int rb)
+    {
+        if (isLazy)
+        {
+            int v = lazy;
+            maxVal += v;
+            if (lb != rb)
+            {
+                l -> setLazy(v), r -> setLazy(v);
+            }
+            resetLazy();
+        }
+    }
+
     void setLazy(int v)
     {
         lazy += v, isLazy = true;
@@ -74,22 +88,10 @@ struct segmentTree
         curr -> refresh();
     }
 
-    void apply(node* &curr, int l, int r)
-    {
-        if (!curr -> isLazy) return;
-        int v = curr -> lazy;
-        curr -> maxVal += v;
-        if (l != r)
-        {
-            (curr -> l) -> setLazy(v), (curr -> r) -> setLazy(v);
-        }
-        curr -> resetLazy();
-    }
-
     int query(int l, int r) {return query(root, 0, sz - 1, l, r).maxVal;}
     node query(node* &curr, int l, int r, int ql, int qr)
     {
-        apply(curr, l, r);
+        curr -> pushLazy(l, r);
         if (l > qr or r < ql) return node();
         if (l >= ql and r <= qr) return *curr;
         int m = (l + r) >> 1;
@@ -99,12 +101,12 @@ struct segmentTree
     void modify(int l, int r, int v) {modify(root, 0, sz - 1, v, l, r);}
     void modify(node* &curr, int l, int r, int v, int ql, int qr)
     {
-        apply(curr, l, r);
+        curr -> pushLazy(l, r);
         if (l > qr or r < ql) return;
         if (l >= ql and r <= qr)
         {
             curr -> setLazy(v);
-            apply(curr, l, r);
+            curr -> pushLazy(l, r);
             return;
         }
         int m = (l + r) >> 1;
