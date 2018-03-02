@@ -23,6 +23,33 @@ struct node
         return this;
     }
 
+    void pushLazy(int lb, int rb)
+    {
+        for (int t = 0; t < 2; t++)
+        {
+            if (isLazy[t])
+            {
+                int v = lazy[t], len = (rb - lb + 1);
+                if (t == 0)
+                {
+                    sumSquares = len * v * v;
+                    sum = len * v;
+                }
+                else
+                {
+                    sumSquares += len * v + 2 * sum * v;
+                    sum += len * v;
+                }
+
+                if (lb != rb)
+                {
+                    l -> setLazy(v, t), r -> setLazy(v, t);
+                }
+                resetLazy(t);
+            }
+        }
+    }
+
     void setLazy(int v, int t)
     {
         lazy[t] = t ? lazy[t] + v : v, isLazy[t] = true;
@@ -63,37 +90,10 @@ struct segmentTree
         curr -> refresh();
     }
 
-    void apply(node* &curr, int l, int r)
-    {
-        for (int t = 0; t < 2; t++)
-        {
-            if (curr -> isLazy[t])
-            {
-                int v = curr -> lazy[t], len = (r - l + 1);
-                if (t == 0)
-                {
-                    curr -> sumSquares = len * v * v;
-                    curr -> sum = len * v;
-                }
-                else
-                {
-                    curr -> sumSquares += len * v + 2 * curr -> sum * v;
-                    curr -> sum += len * v;
-                }
-
-                if (l != r)
-                {
-                    (curr -> l) -> setLazy(v, t), (curr -> r) -> setLazy(v, t);
-                }
-                curr -> resetLazy(t);
-            }
-        }
-    }
-
     ll query(int l, int r) {return query(root, 0, sz - 1, l, r).sumSquares;}
     node query(node* curr, int l, int r, int ql, int qr)
     {
-        apply(curr, l, r);
+        curr -> pushLazy(l, r);
         if (l > qr or r < ql) return node();
         if (l >= ql and r <= qr) return *curr;
         int m = (l + r) >> 1;
@@ -103,12 +103,12 @@ struct segmentTree
     void modify(int ql, int qr, int v, int t) {modify(root, 0, sz - 1, v, t, ql, qr);}
     void modify(node* &curr, int l, int r, int v, int t, int ql, int qr)
     {
-        apply(curr, l, r);
+        curr -> pushLazy(l, r);
         if (l > qr or r < ql) return;
         if (l >= ql and r <= qr)
         {
             curr -> setLazy(v, t);
-            apply(curr, l, r);
+            curr -> pushLazy(l, r);
             return;
         }
         int m = (l + r) >> 1;
