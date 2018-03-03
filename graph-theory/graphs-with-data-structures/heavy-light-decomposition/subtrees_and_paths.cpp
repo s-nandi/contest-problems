@@ -142,7 +142,7 @@ struct heavyLightDecomposition
             root[i] = i == g[curr][0] ? root[curr] : i;
             tour(i);
         }
-        endPosition[curr] = timer;
+        endPosition[curr] = timer - 1;
     }
 
     void build(graph &gr, int rt)
@@ -168,7 +168,7 @@ struct heavyLightDecomposition
 
     void modify(int p, int v)
     {
-        st.modify(position[p], endPosition[p] - 1, v);
+        st.modify(position[p], endPosition[p], v);
     }
 
     int query(int l, int r)
