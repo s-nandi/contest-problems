@@ -77,7 +77,7 @@ struct heavyLightDecomposition
 {
     int sz, timer = 0;
     bool edgeWeighted;
-    vector <int> parent, sizes, depth, root, value, position;
+    vector <int> parent, sizes, root, value, position;
     graph g;
     segmentTree st;
 
