@@ -1,3 +1,6 @@
+//2d segment tree, sum over rectangle
+//http://www.spoj.com/problems/MATSUM/
+
 #include <iostream>
 #include <vector>
 
