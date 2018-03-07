@@ -69,37 +69,37 @@ struct segmentTree2D
         elements.resize(2 * sz1, segmentTree(sz2));
     }
 
-    void modify(int p1, int p2, int v)
+    void modify(int x, int y, int v)
     {
-        p1 += sz1;
-        elements[p1].modify(p2, v);
+        x += sz1;
+        elements[x].modify(y, v);
 
-        while (p1 >= 2)
+        while (x >= 2)
         {
-            elements[p1 >> 1].modify(p2, elements[p1][p2] + elements[p1 ^ 1][p2]);
-            p1 >>= 1;
+            elements[x >> 1].modify(y, elements[x][y] + elements[x ^ 1][y]);
+            x >>= 1;
         }
     }
 
-    int query(int l1, int l2, int r1, int r2)
+    int query(int x1, int y1, int x2, int y2)
     {
         int acc = 0;
-        l1 += sz1;
-        r1 += sz1;
-        while (l1 <= r1)
+        x1 += sz1;
+        x2 += sz1;
+        while (x1 <= x2)
         {
-            if (l1 & 1)
+            if (x1 & 1)
             {
-                acc += elements[l1].query(l2, r2);
-                l1++;
+                acc += elements[x1].query(y1, y2);
+                x1++;
             }
-            if (!(r1 & 1))
+            if (!(x2 & 1))
             {
-                acc += elements[r1].query(l2, r2);
-                r1--;
+                acc += elements[x2].query(y1, y2);
+                x2--;
             }
-            l1 >>= 1;
-            r1 >>= 1;
+            x1 >>= 1;
+            x2 >>= 1;
         }
         return acc;
     }
