@@ -7,15 +7,13 @@
 
 using namespace std;
 
-struct node
+struct node : vector<int>
 {
-    vector <int> values;
-
     node combine(node &o)
     {
         node res;
-        res.values.resize(values.size() + o.values.size());
-        merge(values.begin(), values.end(), o.values.begin(), o.values.end(), res.values.begin());
+        res.resize(size() + o.size());
+        merge(begin(), end(), o.begin(), o.end(), res.begin());
         return res;
     }
 };
@@ -58,12 +56,12 @@ struct segmentTree
         {
             if (l & 1)
             {
-                acc += numGreater(elements[l].values, k);
+                acc += numGreater(elements[l], k);
                 l++;
             }
             if (!(r & 1))
             {
-                acc += numGreater(elements[r].values, k);
+                acc += numGreater(elements[r], k);
                 r--;
             }
             l >>= 1;
@@ -88,7 +86,7 @@ int main()
     {
         int num;
         cin>>num;
-        st[i] = {{num}};
+        st[i].push_back(num);
     }
     st.build();
 
