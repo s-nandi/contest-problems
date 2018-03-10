@@ -9,78 +9,47 @@ using namespace std;
 
 #define ll long long
 
-struct node
+typedef vector <vector<int>> graph;
+
+struct node : map <int, int>
 {
-    map <int, int> counts;
     int maxCount;
     ll sumColors;
 
-    node(int color = -1)
+    node(int color)
     {
-        counts[color] = 1;
+        (*this)[color] = 1;
         maxCount = 1;
         sumColors = color;
     }
 };
 
-vector <vector<int>> graph;
+vector <int> colors;
 
-struct disjointSetUnionTree
+node dfs(graph &g, int curr, int prev, vector <ll> &sol)
 {
-    int sz;
-    vector <node> nodes;
-    vector <int> indexes;
-    vector <ll> solution;
-
-    disjointSetUnionTree(int s)
+    node current(colors[curr]);
+    for (int neighbor: g[curr]) if (neighbor != prev)
     {
-        sz = s;
-        nodes.resize(sz), indexes.resize(sz), solution.resize(sz);
-        for (int i = 0; i < sz; i++)
+        node res = dfs(g, neighbor, curr, sol);
+        if (res.size() > current.size()) swap(res, current);
+        for (auto elem: res)
         {
-            indexes[i] = i;
-        }
-    }
-
-    node& operator [] (int i)
-    {
-        return nodes[i];
-    }
-
-    void solve(vector <vector<int>> &graph)
-    {
-        dfs(graph, 0, -1);
-    }
-
-    void dfs(vector <vector<int>> &graph, int curr, int prev)
-    {
-        for (int neighbor: graph[curr]) if (neighbor != prev)
-        {
-            dfs(graph, neighbor, curr);
-            unionSet(indexes[curr], indexes[neighbor]);
-        }
-        solution[curr] = nodes[indexes[curr]].sumColors;
-    }
-
-    void unionSet(int &a, int &b)
-    {
-        if (nodes[a].counts.size() < nodes[b].counts.size()) swap(a, b);
-
-        for (auto &e: nodes[b].counts)
-        {
-            nodes[a].counts[e.first] += e.second;
-            if (nodes[a].counts[e.first] == nodes[a].maxCount)
+            current[elem.first] += elem.second;
+            if (current[elem.first] > current.maxCount)
             {
-                nodes[a].sumColors += e.first;
+                current.maxCount = current[elem.first];
+                current.sumColors = elem.first;
             }
-            else if(nodes[a].counts[e.first] > nodes[a].maxCount)
+            else if(current[elem.first] == current.maxCount)
             {
-                nodes[a].maxCount = nodes[a].counts[e.first];
-                nodes[a].sumColors = e.first;
+                current.sumColors += elem.first;
             }
         }
     }
-};
+    sol[curr] = current.sumColors;
+    return current;
+}
 
 int main()
 {
@@ -90,30 +59,29 @@ int main()
     int n;
     cin>>n;
 
-    graph.resize(n);
-    disjointSetUnionTree dsu(n);
+    graph g(n);
+    colors.resize(n);
 
     for (int i = 0; i < n; i++)
     {
-        int c;
-        cin>>c;
-        dsu[i] = node(c);
+        cin>>colors[i];
     }
 
     for (int i = 0; i < n - 1; i++)
     {
-        int x, y;
-        cin>>x>>y;
-        --x; --y;
-        graph[x].push_back(y);
-        graph[y].push_back(x);
+        int a, b;
+        cin>>a>>b;
+        --a, --b;
+        g[a].push_back(b);
+        g[b].push_back(a);
     }
 
-    dsu.dfs(graph, 0, -1);
+    vector <ll> sol(n);
+    dfs(g, 0, -1, sol);
 
-    for (ll sol: dsu.solution)
+    for (auto i: sol)
     {
-        cout<<sol<<" ";
+        cout<<i<<" ";
     }
     cout<<'\n';
 
