@@ -12,24 +12,24 @@ using namespace std;
 
 struct fenwickTree
 {
-	vector <int> elements;
+    vector <int> elements;
 
     fenwickTree(int s)
     {
         elements.resize(s + 1);
     }
 
-	void modify(int i, int v)
-	{
-		for (; i < elements.size(); i += i&(-i)) elements[i] += v;
-	}
+    void modify(int i, int v)
+    {
+        for (; i < elements.size(); i += i&(-i)) elements[i] += v;
+    }
 
-	int query(int i)
-	{
-		int ans = 0;
-		for (; i > 0; i -= i&(-i)) ans += elements[i];
-		return ans;
-	}
+    int query(int i)
+    {
+        int ans = 0;
+        for (; i > 0; i -= i&(-i)) ans += elements[i];
+        return ans;
+    }
 };
 
 struct line
