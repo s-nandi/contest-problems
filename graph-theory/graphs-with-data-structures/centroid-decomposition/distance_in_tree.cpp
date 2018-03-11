@@ -1,7 +1,9 @@
+//centroid decomposition, dynamic programming
+//http://codeforces.com/contest/161/problem/D
+
 #include <iostream>
 #include <vector>
-#include <map>
-#include <functional>
+#include <cstring>
 
 using namespace std;
 
@@ -9,90 +11,95 @@ using namespace std;
 
 typedef vector<vector<int>> graph;
 
+const int MAXK = 500;
+
 struct centroidDecomposition
 {
-    ll sol;
-    vector <int> blocked, sizes;
+    int sz;
     graph g;
+    vector <int> sizes, blocked;
 
-    centroidDecomposition(graph &gr, int k)
+    int k; ll sol;
+    int reachable[MAXK + 1];
+
+    centroidDecomposition(graph &gr, int _k)
     {
-        int sz = gr.size();
-        g = gr, sol = 0;
+        g = gr;
+        sz = g.size(), k = _k, sol = 0;
         sizes.resize(sz), blocked.resize(sz);
-        decompose(0, -1, k);
+        decompose(0);
     }
 
-    int decompose(int curr, int prev, int k)
+    int decompose(int curr, int prev = -1)
     {
-        function <int (int, int)> calcSize = [&](int curr, int prev)
+        curr = findCentroid(calcSize(curr), curr);
+        blocked[curr] = true;
+        solveNode(curr, -1);
+        for (int neighbor: g[curr]) if (neighbor != prev and !blocked[neighbor])
         {
-            sizes[curr] = 1;
-            for (int neighbor: g[curr]) if (neighbor != prev and !blocked[neighbor])
-            {
-                sizes[curr] += calcSize(neighbor, curr);
-            }
-            return sizes[curr];
-        };
-
-        auto findCentroid = [&](int curr, int prev, int n)
-        {
-            while (true)
-            {
-                bool moved = false;
-                for (int neighbor: g[curr]) if (neighbor != prev and !blocked[neighbor])
-                {
-                    if (sizes[neighbor] > n / 2)
-                    {
-                        prev = curr, curr = neighbor, moved = true;
-                        break;
-                    }
-                }
-                if (!moved) break;
-            }
-            blocked[curr] = 1;
-            return curr;
-        };
-
-        curr = findCentroid(curr, -1, calcSize(curr, -1));
-        sol += solveNode(curr, -1, k);
-        for (int neighbor: g[curr]) if (!blocked[neighbor])
-        {
-            decompose(neighbor, curr, k);
+            decompose(neighbor, curr);
         }
         return curr;
     }
 
-    ll solveNode(int curr, int prev, int k)
+    int calcSize(int curr, int prev = -1)
     {
-        map <ll, ll> subtree;
-        function <void (int, int, int)> process = [&](int curr, int prev, int dist)
-        {
-            if (dist > k) return;
-            subtree[dist]++;
-            for (int neighbor: g[curr]) if (neighbor != prev and !blocked[neighbor])
-            {
-                process(neighbor, curr, dist + 1);
-            }
-        };
-
-        vector <ll> reachable(k + 1);
-        reachable[0] = 1;
-        ll acc = 0;
+        sizes[curr] = 1;
         for (int neighbor: g[curr]) if (neighbor != prev and !blocked[neighbor])
         {
-            subtree.clear();
-            process(neighbor, curr, 1);
-            for (const auto &elem: subtree)
-            {
-                acc += elem.second * reachable[k - elem.first];
-            }
-            for (const auto &elem: subtree)
-            {
-                reachable[elem.first] += elem.second;
-            }
+            sizes[curr] += calcSize(neighbor, curr);
         }
-        return acc;
+        return sizes[curr];
+    }
+
+    int findCentroid(int total, int curr, int prev = -1)
+    {
+        while (prev != curr)
+        {
+            int temp = curr;
+            for (int neighbor: g[curr]) if (neighbor != prev and !blocked[neighbor])
+            {
+                if (sizes[neighbor] > total / 2)
+                {
+                    curr = neighbor;
+                    break;
+                }
+            }
+            prev = temp;
+        }
+        return curr;
+    }
+
+    void solveNode(int curr, int prev = -1)
+    {
+        memset(reachable, 0, sizeof(reachable));
+        reachable[0] = 1;
+        for (int neighbor: g[curr]) if (neighbor != prev and !blocked[neighbor])
+        {
+            solveSubtree(neighbor, curr);
+            refresh(neighbor, curr);
+        }
+    }
+
+    template <class Operation>
+    void process(int curr, int prev, int dist, Operation op)
+    {
+        if (dist > k) return;
+        op(dist);
+        for (int neighbor: g[curr]) if (neighbor != prev and !blocked[neighbor])
+        {
+            process(neighbor, curr, dist + 1, op);
+        }
+    }
+
+    void solveSubtree(int curr, int prev)
+    {
+        process(curr, prev, 1, [this](int dist){ sol += reachable[k - dist]; });
+    }
+
+    void refresh(int curr, int prev)
+    {
+        process(curr, prev, 1, [this](int dist){ reachable[dist]++; });
     }
 };
 
