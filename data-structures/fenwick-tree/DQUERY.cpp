@@ -1,4 +1,4 @@
-//segment tree (offline processing), coordinate compression, # of distinct element in range queries
+//fenwick tree (offline processing), coordinate compression, # of distinct element in range queries
 //http://www.spoj.com/problems/DQUERY/
 
 #include <iostream>
