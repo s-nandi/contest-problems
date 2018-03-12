@@ -1,4 +1,4 @@
-//network flow (edmond-karp, space-efficient representation), vertex capacities
+//network flow (edmond-karp, space-efficient representation, vertex capacities)
 //https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=2375
 
 #include <iostream>
@@ -7,110 +7,78 @@
 
 using namespace std;
 
-#define INF 1231231234
+const int INF = 1231231234;
+const vector <int> dx = {-1, 0, 1, 0};
+const vector <int> dy = {0, -1, 0, 1};
 
 struct edge
 {
-    int i;
-    int capacity;
-    int flow;
-    int residual()
-    {
-        return capacity - flow;
-    }
+    int to, id;
 };
 
-struct ancestor
+typedef vector<vector<edge>> graph;
+
+vector <int> residual;
+void addEdge(graph &g, int from, int to, int capacity)
 {
-    int ancestorNode;
-    int edgeIndex;
-};
-
-vector <edge> edges;
-vector <vector<int>> graph;
-
-vector <int> dx = {-1, 0, 1, 0};
-vector <int> dy = {0, -1, 0, 1};
-
-void addEdge(int from, int to, int capacity)
-{
-    graph[from].push_back(edges.size());
-    edges.push_back({to, capacity, 0});
-    graph[to].push_back(edges.size());
-    edges.push_back({from, 0, 0});
+    g[from].push_back({to, (int) residual.size()});
+    residual.push_back(capacity);
+    g[to].push_back({from, (int) residual.size()});
+    residual.push_back(0);
 }
 
-int bfs(int source, int sink)
+int bfs(graph &g, int source, int sink)
 {
     queue <int> q;
+    vector <int> anc(g.size(), -1), ancId(g.size());
     q.push(source);
 
-    vector <ancestor> anc(graph.size(), {-1, -1});
-    anc[source] = {-2, -1};
-
     bool reached = false;
-
     while (!q.empty())
     {
         int curr = q.front();
         q.pop();
-
-        if (curr == sink)
+        if (curr == sink) {reached = true; break;}
+        for (edge e: g[curr]) if (anc[e.to] == -1 and residual[e.id] > 0)
         {
-            reached = true;
-            break;
-        }
-
-        for (int index: graph[curr])
-        {
-            edge e = edges[index];
-            int neighbor = e.i;
-            if (anc[neighbor].ancestorNode == -1 and e.residual() > 0)
-            {
-                q.push(neighbor);
-                anc[neighbor] = {curr, index};
-            }
+            q.push(e.to);
+            anc[e.to] = curr, ancId[e.to] = e.id;
         }
     }
-
     if (!reached) return 0;
 
     int augment = INF;
-    for (int i = sink; i != source; i = anc[i].ancestorNode)
+    for (int i = sink; i != source; i = anc[i])
     {
-        int ind = anc[i].edgeIndex;
-        augment = min(augment, edges[ind].residual());
+        int id = ancId[i];
+        augment = min(augment, residual[id]);
     }
 
-    for (int i = sink; i != source; i = anc[i].ancestorNode)
+    for (int i = sink; i != source; i = anc[i])
     {
-        int ind = anc[i].edgeIndex;
-        edges[ind].flow += augment;
-        edges[ind ^ 1].flow -= augment;
+        int id = ancId[i];
+        residual[id] -= augment;
+        residual[id ^ 1] += augment;
     }
 
     return augment;
 }
 
-int edmondkarp(int source, int sink)
+int edmondkarp(graph &g, int source, int sink)
 {
     int res = 0;
     while (true)
     {
-        int delta = bfs(source, sink);
-        if (delta == 0)
-        {
-            break;
-        }
+        int delta = bfs(g, source, sink);
+        if (delta == 0) break;
         res += delta;
     }
-
     return res;
 }
 
-int mapping(int i, int j, int Y, bool in)
+int mapping(int i, int j, int Y, bool outEdge)
 {
-    return 2 * (i * Y + j) + (in ? 0 : 1);
+    return 2 * (i * Y + j) + outEdge;
 }
 
 int main()
@@ -119,7 +87,6 @@ int main()
     while (cin>>X>>Y>>P)
     {
         char grid[X][Y];
-
         for (int i = 0; i < X; i++)
         {
             for (int j = 0; j < Y; j++)
@@ -128,11 +95,8 @@ int main()
             }
         }
 
-        int s = 2 * X * Y;
-        int t = 2 * X * Y + 1;
-
-        graph.clear();
-        graph.resize(2 * X * Y + 2);
+        graph g(2 * X * Y + 2);
+        int s = 2 * X * Y, t = 2 * X * Y + 1;
 
         for (int i = 0; i < X; i++)
         {
@@ -140,44 +104,34 @@ int main()
             {
                 if (grid[i][j] == '~') continue;
 
-                int currIn = mapping(i, j, Y, true);
-                int currOut = mapping(i, j, Y, false);
+                int currIn = mapping(i, j, Y, false);
+                int currOut = mapping(i, j, Y, true);
 
                 if(grid[i][j] == '.' or grid[i][j] == '*')
                 {
-                    addEdge(currIn, currOut, 1);
+                    addEdge(g, currIn, currOut, 1);
+                    if (grid[i][j] == '*') addEdge(g, s, currIn, 1);
                 }
                 else
                 {
-                    addEdge(currIn, currOut, INF);
+                    addEdge(g, currIn, currOut, INF);
+                    if (grid[i][j] == '#') addEdge(g, currOut, t, P);
                 }
 
-                if (grid[i][j] == '*')
+                for (int k = 0; k < 4; k++)
                 {
-                    addEdge(s, currIn, 1);
-                }
-                else if (grid[i][j] == '#')
-                {
-                    addEdge(currOut, t, P);
-                }
-
-                for (int dir = 0; dir < 4; dir++)
-                {
-                    int nx = i + dx[dir];
-                    int ny = j + dy[dir];
-
+                    int nx = i + dx[k];
+                    int ny = j + dy[k];
                     if (nx >= 0 and nx < X and ny >= 0 and ny < Y)
                     {
                         if (grid[nx][ny] == '~') continue;
-
-                        int neighborIn = mapping(nx, ny, Y, true);
-                        addEdge(currOut, neighborIn, INF);
+                        int neighborIn = mapping(nx, ny, Y, false);
+                        addEdge(g, currOut, neighborIn, INF);
                     }
                 }
             }
         }
-
-        cout<<edmondkarp(s, t)<<endl;
+        cout<<edmondkarp(g, s, t)<<endl;
     }
 
     return 0;
