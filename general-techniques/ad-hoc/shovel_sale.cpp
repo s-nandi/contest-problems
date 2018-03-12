@@ -1,4 +1,4 @@
-//combinatorics
+//counting
 //http://codeforces.com/contest/899/problem/D
 
 #include <iostream>
