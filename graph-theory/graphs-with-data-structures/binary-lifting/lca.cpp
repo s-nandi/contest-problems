@@ -43,7 +43,7 @@ struct binaryLift
         if (depths[l] > depths[r]) swap(l, r);
         for (int i = h - 1; i >= 0; i--)
         {
-            if ((1 << i) & depths[r] - depths[l])
+            if ((1 << i) & (depths[r] - depths[l]))
             {
                 r = table[r][i];
             }
