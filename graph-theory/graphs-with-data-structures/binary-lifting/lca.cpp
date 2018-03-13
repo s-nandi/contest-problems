@@ -6,49 +6,48 @@
 
 using namespace std;
 
-vector <vector<int>> graph;
+typedef vector<vector<int>> graph;
 
 struct binaryLift
 {
-    int sz, h = 0;
+    int sz, h;
+    graph g;
     vector <vector<int>> table;
-    vector <int> depth;
 
-    binaryLift(vector <vector<int>> &graph)
+    vector <int> depths;
+
+    binaryLift(graph &gr)
     {
-        sz = graph.size();
-        while (1 << h < sz) h++;
-        table.resize(sz, vector<int>(h, -1)), depth.resize(sz);
-
-        build(graph, 0);
+        g = gr, sz = g.size(), h = 0, calcHeight(), table.resize(sz, vector<int>(h, -1));
+        depths.resize(sz);
+        build(0);
     }
+    void calcHeight(){while (1 << h < sz) h++;}
 
-    void build(vector <vector<int>> &graph, int curr)
+    void build(int curr, int depth = 0)
     {
-        for (int i = 1; i < h; i++)
+        depths[curr] = depth;
+        for (int i = 1; i < h; i++) if (table[curr][i - 1] != -1)
         {
-            table[curr][i] = table[curr][i - 1] != -1 ? table[table[curr][i - 1]][i - 1] : -1;
+            table[curr][i] = table[table[curr][i - 1]][i - 1];
         }
-        for (int i: graph[curr]) if (i != table[curr][0])
+        for (int neighbor: g[curr]) if (neighbor != table[curr][0])
         {
-            table[i][0] = curr;
-            depth[i] = depth[curr] + 1;
-            build(graph, i);
+            table[neighbor][0] = curr;
+            build(neighbor, depth + 1);
         }
     }
 
     int lowestCommonAncestor(int l, int r)
     {
-        if (depth[l] > depth[r]) swap(l, r);
-        int diff = depth[r] - depth[l];
-
+        if (depths[l] > depths[r]) swap(l, r);
         for (int i = h - 1; i >= 0; i--)
         {
-            if (1 << i & diff)
+            if ((1 << i) & depths[r] - depths[l])
             {
                 r = table[r][i];
             }
-        }
+        }z
         if (l == r) return l;
 
         for (int i = h - 1; i >= 0; i--)
@@ -67,14 +66,14 @@ int main()
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    int tests;
-    cin>>tests;
-    for (int test = 1; test <= tests; test++)
+    int T;
+    cin>>T;
+    for (int test = 1; test <= T; test++)
     {
         int n;
         cin>>n;
 
-        graph.clear(); graph.resize(n);
+        graph g(n);
 
         for (int a = 0; a < n; a++)
         {
@@ -85,11 +84,11 @@ int main()
                 int b;
                 cin>>b;
                 --b;
-                graph[a].push_back(b);
-                graph[b].push_back(a);
+                g[a].push_back(b);
+                g[b].push_back(a);
             }
         }
-        binaryLift bl(graph);
+        binaryLift bl(g);
 
         cout<<"Case "<<test<<":"<<'\n';
 
