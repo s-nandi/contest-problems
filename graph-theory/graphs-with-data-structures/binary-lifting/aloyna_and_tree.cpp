@@ -10,42 +10,44 @@ using namespace std;
 
 struct edge
 {
-    int to; ll weight;
+    int to, w;
 };
+typedef vector<vector<edge>> graph;
 
-vector <vector<edge>> graph;
 vector <int> values;
-
 struct binaryLift
 {
     int sz, h = 0;
+    graph g;
     vector <vector<int>> table;
-    vector <int> results, prefixSums; vector <ll> distances;
 
-    binaryLift(vector <vector<edge>> &graph)
+    vector <int> sol, prefixSums; vector <ll> distances;
+
+    binaryLift(graph &gr)
     {
-        sz = graph.size();
-        while (1 << h < sz) h++;
-        table.resize(sz, vector<int>(h, -1)), values.resize(sz), results.resize(sz), prefixSums.resize(sz), distances.resize(sz);
-
-        build(graph, 0);
+        g = gr, sz = g.size(), calcHeight(), table.resize(sz, vector<int>(h, -1));
+        sol.resize(sz), prefixSums.resize(sz), distances.resize(sz);
+        build(0);
+        solve();
     }
 
-    void build(vector <vector<edge>> &graph, int curr, ll currDistance = 0)
+    void calcHeight(){while (1 << h < sz) h++;}
+
+    void build(int curr, ll dist = 0)
     {
-        distances[curr] = currDistance;
-        for (int i = 1; i < h; i++)
+        distances[curr] = dist;
+        for (int i = 1; i < h; i++) if (table[curr][i - 1] != -1)
         {
-            table[curr][i] = table[curr][i - 1] != -1 ? table[table[curr][i - 1]][i - 1] : -1;
+            table[curr][i] = table[table[curr][i - 1]][i - 1];
         }
-        for (edge e: graph[curr])
+        for (edge e: g[curr])
         {
             table[e.to][0] = curr;
-            build(graph, e.to, currDistance + e.weight);
+            build(e.to, dist + e.w);
         }
     }
 
-    void solve(vector <vector<edge>> &graph)
+    void solve()
     {
         for (int node = 0; node < sz; node++)
         {
@@ -60,17 +62,17 @@ struct binaryLift
             prefixSums[curr]--;
             prefixSums[node]++;
         }
-        push(graph, 0);
+        push(0);
     }
 
-    int push(vector <vector<edge>> &graph, int curr)
+    int push(int curr)
     {
-        results[curr] = 0;
-        for (edge e: graph[curr])
+        sol[curr] = 0;
+        for (edge e: g[curr])
         {
-            results[curr] += push(graph, e.to);
+            sol[curr] += push(e.to);
         }
-        return results[curr] + prefixSums[curr];
+        return sol[curr] + prefixSums[curr];
     }
 };
 
@@ -82,7 +84,7 @@ int main()
     int n;
     cin>>n;
 
-    graph.resize(n);
+    graph g(n);
     values.resize(n);
 
     for (int i = 0; i < n; i++)
@@ -91,14 +93,13 @@ int main()
     }
     for (int i = 1; i < n; i++)
     {
-        int p; ll w;
+        int p, w;
         cin>>p>>w;
-        graph[--p].push_back({i, w});
+        g[--p].push_back({i, w});
     }
-    binaryLift bl(graph);
-    bl.solve(graph);
+    binaryLift bl(g);
 
-    for (int res: bl.results)
+    for (int res: bl.sol)
     {
         cout<<res<<' ';
     }
