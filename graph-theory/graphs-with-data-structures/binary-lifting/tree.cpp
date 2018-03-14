@@ -1,4 +1,4 @@
-//binary lift, storing maximum and sum along lifts
+//online binary lift, getting maximum and sum along lifts
 //http://codeforces.com/contest/932/problem/D
 
 #include <iostream>
@@ -7,73 +7,68 @@
 using namespace std;
 
 #define ll long long
-#define MAXN 400001
 
 const ll INF = 123123123123123123;
+const int MAXN = 400001;
 
 vector <int> values;
 
 struct binaryLift
 {
-    int sz, h = 0, type;
-    vector <vector<int>> table; vector <vector<ll>> acc;
+    int sz, h = 0;
+    vector <vector<int>> table;
+    vector <vector<ll>> sums;
 
-    binaryLift(int s, int t)
+    binaryLift(int s)
     {
-        sz = s, type = t;
-        while (1 << h < sz) h++;
-
-        table.resize(sz, vector<int>(h, -1)), acc.resize(sz, vector<ll>(h, type == 0 ? 0 : INF));
+        sz = s, calcHeight(), table.resize(sz, vector<int>(h, -1));
+        sums.resize(sz, vector<ll>(h, 0));
     }
+    void calcHeight(){while (1 << h < sz) h++;}
 
-    void addEdge(int p, int c, ll w)
+    void addEdge(int par, int curr, ll weight)
     {
-        if (p == -1) return;
-
-        table[c][0] = p;
-        acc[c][0] = values[p];
-
-        for (int i = 1; i < h; i++)
+        int link;
+        if (values[par] >= weight) link = par;
+        else
         {
-            table[c][i] = table[c][i - 1] != -1 ? table[table[c][i - 1]][i - 1] : -1;
-            if (table[c][i] != -1)
+            link = par;
+            for (int i = h - 1; i >= 0; i--) if (table[link][i] != -1)
             {
-                if (type == 0) acc[c][i] = max(acc[c][i - 1], acc[table[c][i - 1]][i - 1]);
-                else acc[c][i] = acc[c][i - 1] + acc[table[c][i - 1]][i - 1];
+                if (values[table[link][i]] < weight)
+                {
+                    link = table[link][i];
+                }
             }
+            link = table[link][0];
+        }
+
+        table[curr][0] = link;
+        if (link != -1) sums[curr][0] = values[link];
+
+        for (int i = 1; i < h; i++) if (table[curr][i - 1] != -1)
+        {
+            table[curr][i] = table[table[curr][i - 1]][i - 1];
+            sums[curr][i] = sums[curr][i - 1] + sums[table[curr][i - 1]][i - 1];
         }
     }
 
     int query(int curr, ll limit)
     {
-        if (type == 0)
-        {
-            for (int i = h - 1; i >= 0; i--)
-            {
-                if (table[curr][i] != -1 and acc[curr][i] < limit)
-                {
-                    curr = table[curr][i];
-                }
-            }
-            return table[curr][0];
-        }
-        else
-        {
-            if (values[curr] > limit) return 0;
+        if (values[curr] > limit) return 0;
 
-            ll amt = values[curr];
-            int dist = 0;
-            for (int i = h - 1; i >= 0; i--)
+        ll amt = values[curr];
+        int dist = 1;
+        for (int i = h - 1; i >= 0; i--) if (table[curr][i] != -1)
+        {
+            if (amt + sums[curr][i] <= limit)
             {
-                if (table[curr][i] != -1 and amt + acc[curr][i] <= limit)
-                {
-                    amt += acc[curr][i];
-                    curr = table[curr][i];
-                    dist += (1 << i);
-                }
+                amt += sums[curr][i];
+                curr = table[curr][i];
+                dist += (1 << i);
             }
-            return dist + 1;
         }
+        return dist;
     }
 };
 
@@ -82,7 +77,7 @@ int main()
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    binaryLift bl[2] = {binaryLift(MAXN, 0), binaryLift(MAXN, 1)};
+    binaryLift bl(MAXN);
     values.resize(MAXN);
 
     int q;
@@ -102,13 +97,12 @@ int main()
         if (type == 1)
         {
             values[numNodes] = q;
-            bl[0].addEdge(p, numNodes, q);
-            bl[1].addEdge(bl[0].query(numNodes, q), numNodes, q);
+            bl.addEdge(p, numNodes, q);
             numNodes++;
         }
         else
         {
-            last = bl[1].query(p, q);
+            last = bl.query(p, q);
             cout<<last<<'\n';
         }
     }
