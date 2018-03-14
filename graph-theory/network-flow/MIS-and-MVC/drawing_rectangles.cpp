@@ -1,4 +1,4 @@
-//network flow (dinic, space-efficient representation, minimum vertex cover on bipartite, recovering mvc/min cut), union of rectangles (recovering points), segment tree (lazy propagation)
+//network flow (dinic, minimum vertex cover on bipartite, recovering mvc/min cut), union of rectangles (recovering points), segment tree (lazy propagation)
 //https://www.hackerrank.com/contests/university-codesprint-4/challenges/drawing-rectangles
 
 #include <iostream>
