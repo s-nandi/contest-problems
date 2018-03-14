@@ -10,11 +10,12 @@ using namespace std;
 
 struct node
 {
-    ll sum, sumSquares, lazy[2];
-    bool isLazy[2];
+    ll sum, sumSquares, lazy[2]; bool isLazy[2];
     node *l, *r;
+    int lb, rb;
 
     node(){sum = 0, sumSquares = 0, lazy[0] = lazy[1] = 0, isLazy[0] = isLazy[1] = false, l = NULL, r = NULL;}
+    void setBounds(int a, int b){lb = a, rb = b;}
     void init(int i) {sum = i, sumSquares = i * i;}
 
     node* refresh()
@@ -23,7 +24,7 @@ struct node
         return this;
     }
 
-    void pushLazy(int lb, int rb)
+    void pushLazy()
     {
         for (int t = 0; t < 2; t++)
         {
@@ -65,12 +66,12 @@ struct segmentTree
 {
     int sz;
     node* root;
+    vector <int> v;
 
-    segmentTree(vector <int> &v)
+    segmentTree(vector <int> &ve)
     {
-        root = new node();
-        sz = v.size();
-        build(v, root, 0, sz - 1);
+        root = new node(), v = ve, sz = v.size();
+        build(root, 0, sz - 1);
     }
 
     node combine(node a, node b)
@@ -80,39 +81,36 @@ struct segmentTree
         return *(acc.refresh());
     }
 
-    void build(vector <int> &v, node* &curr, int l, int r)
+    void build(node* &curr, int l, int r)
     {
+        curr -> setBounds(l, r);
         if (l == r) {curr -> init(v[l]); return;}
         int m = (l + r) >> 1;
-        curr -> l = new node(), curr -> r = new node();
-        build(v, curr -> l, l, m);
-        build(v, curr -> r, m + 1, r);
+        build(curr -> l = new node(), l, m), build(curr -> r = new node(), m + 1, r);
         curr -> refresh();
     }
 
-    ll query(int l, int r) {return query(root, 0, sz - 1, l, r).sumSquares;}
-    node query(node* curr, int l, int r, int ql, int qr)
+    ll query(int l, int r) {return query(root, l, r).sumSquares;}
+    node query(node* curr, int l, int r)
     {
-        curr -> pushLazy(l, r);
-        if (l > qr or r < ql) return node();
-        if (l >= ql and r <= qr) return *curr;
-        int m = (l + r) >> 1;
-        return combine(query(curr -> l, l, m, ql, qr), query(curr -> r, m + 1, r, ql, qr));
+        curr -> pushLazy();
+        if (curr -> lb > r or curr -> rb < l) return node();
+        if (curr -> lb >= l and curr -> rb <= r) return *curr;
+        return combine(query(curr -> l, l, r), query(curr -> r, l, r));
     }
 
-    void modify(int ql, int qr, int v, int t) {modify(root, 0, sz - 1, v, t, ql, qr);}
-    void modify(node* &curr, int l, int r, int v, int t, int ql, int qr)
+    void modify(int l, int r, int v, int t) {modify(root, l, r, v, t);}
+    void modify(node* &curr, int l, int r, int v, int t)
     {
-        curr -> pushLazy(l, r);
-        if (l > qr or r < ql) return;
-        if (l >= ql and r <= qr)
+        curr -> pushLazy();
+        if (curr -> lb > r or curr -> rb < l) return;
+        if (curr -> lb >= l and curr -> rb <= r)
         {
             curr -> setLazy(v, t);
-            curr -> pushLazy(l, r);
+            curr -> pushLazy();
             return;
         }
-        int m = (l + r) >> 1;
-        modify(curr -> l, l, m, v, t, ql, qr), modify(curr -> r, m + 1, r, v, t, ql, qr);
+        modify(curr -> l, l, r, v, t), modify(curr -> r, l, r, v, t);
         curr -> refresh();
     }
 };
