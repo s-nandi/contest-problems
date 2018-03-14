@@ -14,6 +14,7 @@ struct node
     int lb, rb;
 
     node(){sum = 0, l = NULL, r = NULL;}
+    void setBounds(int a, int b){lb = a, rb = b;}
     void init(int i) {sum = i;}
     void modify(int v) {sum += v;}
 
@@ -46,7 +47,7 @@ struct segmentTree
 
     void build(node* &curr, int l, int r)
     {
-        curr -> lb = l, curr -> rb = r;
+        curr -> setBounds(l, r);
         if (l == r) {curr -> init(0); return;}
         int m = (l + r) >> 1;
         build(curr -> l = new node(), l, m), build(curr -> r = new node(), m + 1, r);
