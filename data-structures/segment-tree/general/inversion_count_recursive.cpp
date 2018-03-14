@@ -11,6 +11,7 @@ struct node
 {
     int sum;
     node *l, *r;
+    int lb, rb;
 
     node(){sum = 0, l = NULL, r = NULL;}
     void init(int i) {sum = i;}
@@ -45,30 +46,26 @@ struct segmentTree
 
     void build(node* &curr, int l, int r)
     {
+        curr -> lb = l, curr -> rb = r;
         if (l == r) {curr -> init(0); return;}
-        int m = (l + r) >> 1;
-        curr -> l = new node(), curr -> r = new node();
-        build(curr -> l, l, m);
-        build(curr -> r, m + 1, r);
+        build(curr -> l = new node(), l, (l + r) >> 1), build(curr -> r = new node(), (l + r) >> 1 + 1, r);
         curr -> refresh();
     }
 
-    int query(int l, int r) {return query(root, 0, sz - 1, l, r).sum;}
-    node query(node* &curr, int l, int r, int ql, int qr)
+    int query(int l, int r) {return query(root, l, r).sum;}
+    node query(node* &curr, int l, int r)
     {
-        if (l > qr or r < ql) return node();
-        if (l >= ql and r <= qr) return *curr;
-        int m = (l + r) >> 1;
-        return combine(query(curr -> l, l, m, ql, qr), query(curr -> r, m + 1, r, ql, qr));
+        if (curr -> lb > r or curr -> rb < l) return node();
+        if (curr -> lb >= l and curr -> rb <= r) return *curr;
+        return combine(query(curr -> l, l, r), query(curr -> r, l, r));
     }
 
-    void modify(int p, int v) {modify(root, 0, sz - 1, p, v);}
-    void modify(node* &curr, int l, int r, int qp, int v)
+    void modify(int p, int v) {modify(root, p, v);}
+    void modify(node* &curr, int p, int v)
     {
-        if (l > qp or r < qp) return;
-        if (l == r) {curr -> modify(v); return;}
-        int m = (l + r) >> 1;
-        modify(curr -> l, l, m, qp, v), modify(curr -> r, m + 1, r, qp, v);
+        if (curr -> lb > p or curr -> rb < p) return;
+        if (curr -> lb == curr -> rb) {curr -> modify(v); return;}
+        modify(curr -> l, p, v), modify(curr -> r, p, v);
         curr -> refresh();
     }
 };
@@ -82,14 +79,17 @@ int mapping(int i)
 
 int main()
 {
-    int t;
-    cin>>t;
-    while(t--)
+    ios_base::sync_with_stdio(NULL);
+    cin.tie(0);
+
+    int T;
+    cin>>T;
+    while(T--)
     {
         int n;
         cin>>n;
-        vector <int> a(n);
 
+        vector <int> a(n);
         for (int i = 0; i < n; i++)
         {
             cin>>a[i];
