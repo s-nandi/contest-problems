@@ -48,7 +48,8 @@ struct segmentTree
     {
         curr -> lb = l, curr -> rb = r;
         if (l == r) {curr -> init(0); return;}
-        build(curr -> l = new node(), l, (l + r) >> 1), build(curr -> r = new node(), (l + r) >> 1 + 1, r);
+        int m = (l + r) >> 1;
+        build(curr -> l = new node(), l, m), build(curr -> r = new node(), m + 1, r);
         curr -> refresh();
     }
 
@@ -88,8 +89,8 @@ int main()
     {
         int n;
         cin>>n;
-
         vector <int> a(n);
+
         for (int i = 0; i < n; i++)
         {
             cin>>a[i];
