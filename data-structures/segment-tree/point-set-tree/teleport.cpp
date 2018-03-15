@@ -3,13 +3,11 @@
 
 #include <iostream>
 #include <vector>
-#include <set>
+#include <map>
 
 using namespace std;
 
-typedef pair<int, int> ii;
-
-const int MAXN = 200005;
+const int MAXX = 200005;
 
 struct disjointSetUnion
 {
@@ -29,22 +27,12 @@ struct disjointSetUnion
     }
 };
 
-struct pt
+struct node : map<int, int>
 {
-    int x, y, index;
-
-    pt(int _x, int _y, int i)
+    int findPoint(int l, int r)
     {
-        x = _x + _y, y = _x - _y, index = i;
-    }
-};
-
-struct node : set<ii>
-{
-    int inRange(int a, int b)
-    {
-        auto it = lower_bound({a, -1});
-        if (it != end() and it -> first <= b)
+        auto it = lower_bound(l);
+        if (it != end() and it -> first <= r)
         {
             return it -> second;
         }
@@ -63,14 +51,11 @@ struct segmentTree
         elements.resize(2 * sz);
     }
 
-    void add(pt p)
+    void addPoint(int x, int y, int ind)
     {
-        int x = p.x;
-        x += sz;
-        while (x >= 1)
+        for(x += sz; x >= 1; x >>= 1)
         {
-            elements[x].insert({p.y, p.index});
-            x >>= 1;
+            elements[x][y] = ind;
         }
     }
 
@@ -78,27 +63,21 @@ struct segmentTree
     {
         if (x1 > x2) swap(x1, x2);
         if (y1 > y2) swap(y1, y2);
-
         x1 = min(max(0, x1), sz - 1);
         x2 = min(max(0, x2), sz - 1);
-
-        x1 += sz, x2 += sz;
-        while (x1 <= x2)
+        
+        for (x1 += sz, x2 += sz; x1 <= x2; ++x1 >>= 1, --x2 >>= 1)
         {
             if (x1 & 1)
             {
-                int res = elements[x1].inRange(y1, y2);
+                int res = elements[x1].findPoint(y1, y2);
                 if (res != -1) return res;
-                x1++;
             }
             if(!(x2 & 1))
             {
-                int res = elements[x2].inRange(y1, y2);
+                int res = elements[x2].findPoint(y1, y2);
                 if (res != -1) return res;
-                x2--;
             }
-            x1 >>= 1;
-            x2 >>= 1;
         }
         return -1;
     }
@@ -113,7 +92,7 @@ int main()
     vector <int> dy = {-2 * r, 2 * r, -2 * r, 2 * r};
 
     disjointSetUnion dsu(q);
-    segmentTree st(MAXN);
+    segmentTree st(MAXX);
 
     for (int i = 0; i < q; i++)
     {
@@ -122,18 +101,19 @@ int main()
 
         if (type == '+')
         {
-            int x, y;
-            cin>>x>>y;
-            pt p = {x, y, i};
+            int ex, ey, x, y;
+            cin>>ex>>ey;
+
+            x = ex + ey, y = ex - ey;
             for (int k = 0; k < 4; k++)
             {
-                int j = st.query(p.x, p.y, p.x + dx[k], p.y + dy[k]);
+                int j = st.query(x, y, x + dx[k], y + dy[k]);
                 if (j != -1)
                 {
                     dsu.unionElements(i, j);
                 }
             }
-            st.add(p);
+            st.addPoint(x, y, i);
         }
         else
         {
