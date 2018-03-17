@@ -2,8 +2,8 @@
 //http://codeforces.com/problemset/problem/166/B
 
 #include <iostream>
-#include <algorithm>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -57,6 +57,17 @@ polygon andrewMonotoneChain(polygon &points)
     return hull;
 }
 
+polygon fixConvexPolygon(polygon &poly)
+{
+    int shift = min_element(poly.begin(), poly.end()) - poly.begin();
+    polygon res(poly.size());
+    for (int i = 0; i < poly.size(); i++)
+    {
+        res[i] = poly[(i + shift) % poly.size()];
+    }
+    return res;
+}
+
 int main()
 {
     ios::sync_with_stdio(false);
@@ -69,7 +80,7 @@ int main()
     {
         cin>>a[i].x>>a[i].y;
     }
-    a = andrewMonotoneChain(a);
+    a = fixConvexPolygon(a);
 
     cin>>m;
     polygon b(m);
