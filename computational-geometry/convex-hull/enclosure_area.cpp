@@ -91,42 +91,42 @@ pair <bool, int> pointInConvexPolygon(polygon &poly, pt &point)
     return {pointInTriangle(triangle, point) != 1, pos};
 }
 
-pair <int, int> findTangents(polygon &hull, pt p) //returns {-1, -1} if p is in polygon
+pair <int, int> findTangentsConvexPolygon(polygon &poly, pt p) //returns {-1, -1} if p in poly
 {
-    int sz = hull.size();
-    auto res = pointInConvexPolygon(hull, p);
+    int sz = poly.size();
+    auto res = pointInConvexPolygon(poly, p);
     if (res.first) return {-1, -1};
 
-    int rightInit = res.second, leftInit = prev(res.second, sz);
+    int rp = res.second, lp = prev(res.second, sz);
 
     int l = 0, r = sz - 1;
     while (l < r)
     {
         int m = (l + r + 1) / 2;
-        pt curr = hull[prev(leftInit, sz, m)];
-        pt nxt = hull[next(prev(leftInit, sz, m), sz)];
-        if (orientation(p, curr, nxt) != 1 and orientation(hull[0], curr, p) != -1) l = m;
+        pt curr = poly[prev(lp, sz, m)];
+        pt nxt = poly[next(prev(lp, sz, m), sz)];
+        if (orientation(p, curr, nxt) != 1 and orientation(poly[0], curr, p) != -1) l = m;
         else r = m - 1;
     }
-    int leftTangent = prev(leftInit, sz, l);
+    int leftTangent = prev(lp, sz, l);
 
     l = 0, r = sz - 1;
     while (l < r)
     {
         int m = (l + r + 1) / 2;
-        pt curr = hull[next(rightInit, sz, m)];
-        pt nxt = hull[prev(next(rightInit, sz, m), sz)];
-        if (orientation(p, curr, nxt) != -1 and orientation(hull[0], curr, p) != 1) l = m;
+        pt curr = poly[next(rp, sz, m)];
+        pt nxt = poly[prev(next(rp, sz, m), sz)];
+        if (orientation(p, curr, nxt) != -1 and orientation(poly[0], curr, p) != 1) l = m;
         else r = m - 1;
     }
-    int rightTangent = next(rightInit, sz, l);
+    int rightTangent = next(rp, sz, l);
 
     return {leftTangent, rightTangent};
 }
 
-ptlT modifiedPolygonArea(polygon &poly, vector <ptlT> &shoelace, pt &p)
+ptlT modifiedConvexPolygonArea(polygon &poly, vector <ptlT> &shoelace, pt &p)
 {
-    auto tangents = findTangents(poly, p);
+    auto tangents = findTangentsConvexPolygon(poly, p);
     int lt = tangents.first, rt = tangents.second;
     if (lt == -1 and rt == -1) return shoelace[poly.size()];
 
