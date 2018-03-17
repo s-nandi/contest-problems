@@ -91,7 +91,7 @@ pair <bool, int> pointInConvexPolygon(polygon &poly, pt &point)
     return {pointInTriangle(triangle, point) != 1, pos};
 }
 
-pair <int, int> findTangent(polygon &hull, pt p)
+pair <int, int> findTangents(polygon &hull, pt p) //returns {-1, -1} if p is in polygon
 {
     int sz = hull.size();
     auto res = pointInConvexPolygon(hull, p);
@@ -124,6 +124,17 @@ pair <int, int> findTangent(polygon &hull, pt p)
     return {leftTangent, rightTangent};
 }
 
+ptlT modifiedPolygonArea(polygon &poly, vector <ptlT> &shoelace, pt &p)
+{
+    auto tangents = findTangents(poly, p);
+    int lt = tangents.first, rt = tangents.second;
+    if (lt == -1 and rt == -1) return shoelace[poly.size()];
+
+    ptlT newArea = (poly[lt] ^ p) + (p ^ poly[rt]);
+    if (lt < rt) return shoelace[lt] + (shoelace[poly.size()] - shoelace[rt]) + newArea;
+    else return shoelace[lt] - shoelace[rt] + newArea;
+}
+
 int main()
 {
     ios::sync_with_stdio(false);
@@ -142,23 +153,13 @@ int main()
             cin>>options[i].x>>options[i].y;
         }
 
-        vector <pt> poly = andrewMonotoneChain(town);
-        auto shoelace = getShoelace(poly);
-
-        ptlT maxArea = abs(shoelace[poly.size()]);
+        polygon hull = andrewMonotoneChain(town);
+        auto shoelace = getShoelace(hull);
+        auto maxArea = shoelace[hull.size()];
         for (pt p: options)
         {
-            pair <int, int> tangents = findTangent(poly, p);
-            int lt = tangents.first, rt = tangents.second;
-            if (lt == -1 and rt == -1) continue;
-
-            ptlT area = (poly[lt] ^ p) + (p ^ poly[rt]);
-            if (lt < rt)  area += shoelace[lt] + (shoelace[poly.size()] - shoelace[rt]);
-            else area += shoelace[lt] - shoelace[rt];
-
-            maxArea = max(abs(area), maxArea);
+            maxArea = max(maxArea, abs(modifiedPolygonArea(hull, shoelace, p)));
         }
-
         if (maxArea & 1) cout<<maxArea / 2<<".5"<<'\n';
         else cout<<maxArea / 2<<".0"<<'\n';
     }
