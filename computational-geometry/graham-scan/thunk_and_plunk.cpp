@@ -56,7 +56,8 @@ polygon andrewMonotoneChain(vector <pt> &points)
         int s = hull.size();
         for (pt &p: points)
         {
-            while(hull.size() >= s + 2 and orientation(hull.rbegin()[1], hull.rbegin()[0], p) != 1) hull.pop_back();
+            while(hull.size() >= s + 2 and orientation(hull.rbegin()[1], hull.rbegin()[0], p) != 1)
+                hull.pop_back();
             hull.push_back(p);
         }
         hull.pop_back();
@@ -81,9 +82,7 @@ int pointInTriangle(polygon &triangle, pt &p) //inside: -1, outside: 1, on: 0
 {
     int orient[3];
     for (int i = 0; i < 3; i++)
-    {
         orient[i] = orientation(triangle[i], triangle[next(i, 3)], p);
-    }
     if (orient[0] == orient[1] and orient[1] == orient[2]) return -1;
     for (int i = 0; i < 3; i++) if (orient[i] * orient[next(i, 3)] == -1) return 1;
     return 0;
@@ -103,6 +102,17 @@ polygon makeRectangle(pt a, pt b)
     pt v = (b - a).perpcw().normalize();
     polygon rectangle = {a - v, b - v, b + v, a + v};
     return fixConvexPolygon(rectangle);
+}
+
+bool pointNearPerimeter(polygon &poly, pt p)
+{
+    int sz = poly.size();
+    for (int i = 0; i < sz; i++)
+    {
+        polygon rectangle = makeRectangle(poly[i], poly[next(i, sz)]);
+        if (pointInConvexPolygon(rectangle, p)) return true;
+    }
+    return false;
 }
 
 int main()
@@ -130,25 +140,18 @@ int main()
             polygon rect = makeRectangle(water[0], water[1]);
             for (pt p: land)
             {
-                if (!pointInConvexPolygon(rect, p)) isIsland = true;
+                if (!pointInConvexPolygon(rect, p)) {isIsland = true; break;}
             }
         }
         else
         {
-            int ws = water.size();
             polygon waterArea = andrewMonotoneChain(water);
             for (pt p: land)
             {
                 if (pointInConvexPolygon(waterArea, p))
-                 {
-                    bool inBoundary = false;
-                    for (int i = 0; i < waterArea.size(); i++)
-                    {
-                        polygon rect = makeRectangle(waterArea[i], waterArea[next(i, ws)]);
-                        if (pointInConvexPolygon(rect, p)) inBoundary = true;
-                    }
-                    if (!inBoundary) isIsland = true;
-                 }
+                {
+                    if (!pointNearPerimeter(waterArea, p)) {isIsland = true; break;}
+                }
             }
         }
         if (isIsland) cout<<"There must be an island."<<'\n';
