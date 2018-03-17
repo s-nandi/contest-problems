@@ -4,203 +4,67 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include <math.h>
-#include <set>
 
 using namespace std;
 
+#define ll long long
 
 struct pt
 {
     int x, y;
-    bool operator < (pt b) const
-    {
-        if (y < b.y)
-        {
-            return true;
-        }
-        else if(y == b.y)
-        {
-            if (x < b.x)
-            {
-                return true;
-            }
 
-        }
-        return false;
+    bool operator < (const pt &o) const
+    {
+        return make_pair(y, x) < make_pair(o.y, o.x);
+    }
+
+    bool operator == (const pt &o) const
+    {
+        return x == o.x and y == o.y;
+    }
+
+    ll distSq(pt &o)
+    {
+        return (ll) (x - o.x) * (x - o.x) + (ll) (y - o.y) * (y - o.y);
     }
 };
 
-bool onSegment(pt p, pt q, pt r)
+int sgn(ll i)
 {
-    if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) &&
-            q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y))
-        return true;
-    return false;
+    return (i > 0) - (i < 0);
 }
 
-int orientation(pt a, pt b, pt c)
+int orientation(pt &a, pt &b, pt &c)
 {
-    long long val1 = (long long) (b.y - a.y) * (c.x - b.x);
-    long long val2 = (long long) (b.x - a.x) * (c.y - b.y);
-
-    if (val1 < val2)
-    {
-        return -1; //counterclockwise
-    }
-    else if (val1 > val2)
-    {
-        return 1; //clockwise
-    }
-    else
-    {
-        return 0; //collinear
-    }
+    return sgn((ll) (b.y - a.y) * (c.x - b.x) - (ll) (b.x - a.x) * (c.y - b.y));
 }
 
-bool onLine(pt a, pt b, pt c) //true if b is on ac
+pt pivot;
+bool angleOrder(pt &a, pt &b)
 {
-    if (orientation(a, b, c) != 0)
-    {
-        return false;
-    }
-    return onSegment(a, b, c);
-
+    int orient = orientation(pivot, a, b);
+    if (orient == 0) return pivot.distSq(a) < pivot.distSq(b);
+    else return orient == 1;
 }
 
-vector <pt> grahamScan(vector <pt> points) //creates clockwise convex polygon
+vector <pt> grahamScan(vector <pt> &points)
 {
-    pt bottom = points[0];
+    swap(*points.begin(), *min_element(points.begin(), points.end()));
+    pivot = points[0];
+    sort(points.begin() + 1, points.end(), angleOrder);
 
-    for (int i = 1; i < points.size(); i++)
+    int curr = points.size() - 1;
+    while (orientation(points[0], points[curr], points[curr - 1]) == 0) curr--;
+    reverse(points.begin() + curr, points.end());
+
+    vector <pt> hull = {points[0], points[1], points[2]};
+    for (int i = 3; i < points.size(); i++)
     {
-        if (points[i].y == bottom.y)
-        {
-            if (points[i].x < bottom.x)
-            {
-                bottom = points[i];
-            }
-        }
-        else if(points[i].y < bottom.y)
-        {
-            bottom = points[i];
-        }
+        while (orientation(hull.rbegin()[1], hull.rbegin()[0], points[i]) == -1) hull.pop_back();
+        hull.push_back(points[i]);
     }
-
-    sort(points.begin(), points.end(),
-         [bottom](pt a, pt b)
-    {
-        if (a.x == bottom.x and a.y == bottom.y)
-        {
-            return true;
-        }
-        if (b.x == bottom.x and b.y == bottom.y)
-        {
-            return false;
-        }
-        int orient = orientation(bottom, a, b);
-        if (orient == 0)
-        {
-            int dista = abs(a.x - bottom.x);
-            int distb = abs(b.x - bottom.x);
-
-            if (dista == distb)
-            {
-                return b < a;
-            }
-            return dista > distb;
-        }
-        return orient == 1;
-    });
-
-    bool includeNext = true;
-
-
-    vector <pt> vPoints = {points[0]};
-    vector <pt> skipped;
-    for (int i = 1; i < points.size(); i++)
-    {
-        if (includeNext)
-        {
-            vPoints.push_back(points[i]);
-        }
-        else
-        {
-            skipped.push_back(points[i]);
-        }
-
-        includeNext = true;
-        if(orientation(points[0], points[i], points[i + 1]) == 0)
-        {
-            includeNext = false;
-        }
-    }
-
-    vector <pt> hull;
-    hull.push_back(vPoints[0]);
-    hull.push_back(vPoints[1]);
-    hull.push_back(vPoints[2]);
-
-    for (int i = 3; i < vPoints.size(); i++)
-    {
-        while (orientation(hull[hull.size() - 2], hull[hull.size() - 1], vPoints[i]) == -1) // != 1 if you don't want points on hull, == -1 if include points on hull
-        {
-            hull.pop_back();
-        }
-        hull.push_back(vPoints[i]);
-    }
-
-    //Rest is only needed if you want to include points on hull
-
-
-    pt first_start = hull[0];
-    pt first_end = hull[1];
-
-    pt last_start = hull[0];
-    pt last_end = hull[hull.size() - 1];
-
-    //points were sorted: furthest to closest
-    vector <pt> onStart; //points on first line segment of hull
-    vector <pt> onEnd; //points on last line segment of hull
-
-    for (pt p: skipped)
-    {
-        if (onLine(first_start, p, first_end))
-        {
-            onStart.push_back(p);
-        }
-        else if(onLine(last_start, p, last_end))
-        {
-            onEnd.push_back(p);
-        }
-    }
-
-    vector <pt> hullCopy(hull);
-
-    int hSize = hullCopy.size();
-    int sSize = onStart.size();
-    int eSize = onEnd.size();
-
-    hull.resize(hSize + sSize + eSize);
-
-    hull[0] = hullCopy[0];
-    for (int i = 0; i < sSize; i++)
-    {
-        hull[1 + i] = onStart[sSize - i - 1]; //reversed b/c points are furthest to closest
-    }
-    for (int i = 1; i < hSize; i++)
-    {
-        hull[i + sSize] = hullCopy[i];
-    }
-    for (int i = 0; i < eSize; i++)
-    {
-        hull[i + sSize + hSize] = onEnd[i];
-    }
-
-
     return hull;
 }
-
 
 int main()
 {
@@ -209,44 +73,25 @@ int main()
 
     int n, m;
     cin>>n;
-    vector <pt> combined(n);
-
+    vector <pt> a(n);
     for (int i = 0; i < n; i++)
     {
-        cin>>combined[i].x>>combined[i].y;
+        cin>>a[i].x>>a[i].y;
     }
+    a = grahamScan(a);
 
     cin>>m;
-    combined.resize(m + n);
-    set <pt> onB;
-
+    vector <pt> b(m);
     for (int i = 0; i < m; i++)
     {
-        cin>>combined[n + i].x>>combined[n + i].y;
-        onB.insert(combined[n + i]);
+        cin>>b[i].x>>b[i].y;
     }
 
-    vector <pt> chCom = grahamScan(combined);
+    b.insert(b.end(), a.begin(), a.end());
+    vector <pt> hull = grahamScan(b);
 
-    bool bOnA = false;
-
-    for (int i = 0; i < chCom.size(); i++)
-    {
-        if (onB.count(chCom[i]) == 1)
-        {
-            bOnA = true;
-            break;
-        }
-    }
-
-    if (!bOnA)
-    {
-        cout<<"YES"<<'\n';
-    }
-    else
-    {
-        cout<<"NO"<<'\n';
-    }
+    if (a == hull) cout<<"YES"<<'\n';
+    else cout<<"NO"<<'\n';
 
     return 0;
 }
