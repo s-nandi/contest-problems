@@ -82,20 +82,20 @@ polygon andrewMonotoneChain(vector <pt> &points)
     return hull;
 }
 
-pair <bool, int> pointInConvexPolygon(polygon &poly, pt &point)
+pair <int, int> pointInConvexPolygon(polygon &poly, pt &point) //inside: -1, outside: 1, on: 0
 {
     auto cmp = [&poly](pt a, pt b){return orientation(poly[0], a, b) == 1;};
     int pos = upper_bound(poly.begin() + 1, poly.end(), point, cmp) - poly.begin();
-    if (pos == 1 or pos == poly.size()) return {false, pos};
+    if (pos == 1 or pos == poly.size()) return {1, pos};
     polygon triangle = {poly[pos - 1], poly[pos], poly[0]};
-    return {pointInTriangle(triangle, point) != 1, pos};
+    return {pointInTriangle(triangle, point), pos};
 }
 
-pair <int, int> findTangentsConvexPolygon(polygon &poly, pt p) //returns {-1, -1} if p in poly
+pair <int, int> findTangentsConvexPolygon(polygon &poly, pt p) //returns {-1, -1} if p in/on poly
 {
     int sz = poly.size();
     auto res = pointInConvexPolygon(poly, p);
-    if (res.first) return {-1, -1};
+    if (res.first != 1) return {-1, -1};
 
     int rp = res.second, lp = prev(res.second, sz);
 
@@ -158,7 +158,7 @@ int main()
         auto maxArea = shoelace[hull.size()];
         for (pt p: options)
         {
-            maxArea = max(maxArea, abs(modifiedPolygonArea(hull, shoelace, p)));
+            maxArea = max(maxArea, abs(modifiedConvexPolygonArea(hull, shoelace, p)));
         }
         if (maxArea & 1) cout<<maxArea / 2<<".5"<<'\n';
         else cout<<maxArea / 2<<".0"<<'\n';
