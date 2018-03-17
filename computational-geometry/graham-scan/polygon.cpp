@@ -31,9 +31,9 @@ struct pt
 };
 
 int sgn(ptlT i) {return (i > -EPS) - (i < EPS);}
-int orientation(pt &a, pt &b, pt &c)
+int orientation(pt &o, pt &a, pt &b)
 {
-    return sgn((c - b) ^ (b - a)); //cw: 1, ccw: -1, col: 0
+    return sgn((b - o) ^ (a - o)); //cw: 1, ccw: -1, col: 0
 }
 
 typedef vector<pt> polygon;
