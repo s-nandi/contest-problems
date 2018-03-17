@@ -12,23 +12,25 @@ using namespace std;
 typedef int ptsT;
 typedef ll ptlT;
 
+const double EPS = 1e-9;
+
 struct pt
 {
     ptsT x, y;
 
     bool operator < (const pt &o) const {return make_pair(y, x) < make_pair(o.y, o.x);}
-    bool operator == (const pt &o) const {return x == o.x and y == o.y;}
+    bool operator == (const pt &o) const {return abs(x - o.x) < EPS and abs(y - o.y) < EPS;}
 
     pt operator - (const pt &o){return {x - o.x, y - o.y};}
 
     ptlT operator ^ (const pt &o){return (ptlT) x * o.y - (ptlT) y * o.x;}
     ptlT operator * (const pt &o){return (ptlT) x * o.x + (ptlT) y * o.y;}
 
-    ptlT abs(){return *this * *this;}
-    ptlT dist2(const pt &o){return (*this - o).abs();}
+    ptlT norm2(){return *this * *this;}
+    ptlT dist2(const pt &o){return (*this - o).norm2();}
 };
 
-int sgn(ll i) {return (i > 0) - (i < 0);}
+int sgn(ptlT i) {return (i > -EPS) - (i < EPS);}
 int orientation(pt &a, pt &b, pt &c)
 {
     return sgn((c - b) ^ (b - a)); //cw: 1, ccw: -1, col: 0
@@ -39,7 +41,7 @@ typedef vector<pt> polygon;
 polygon andrewMonotoneChain(polygon &points)
 {
     sort(points.begin(), points.end());
-    polygon hull;
+    polygon hull; hull.reserve(points.size() + 1);
     for (int i = 0; i < 2; i++)
     {
         int s = hull.size();
