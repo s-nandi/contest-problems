@@ -1,338 +1,165 @@
-//dynamic convex hull, shoelace theorem, prefix sum, binary search, convex polygon containment
+//andrew monotone chain, tangents of convex polygon to point, shoelace theorem (prefix sum)
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&category=757&problem=5971
 //2016 Mid-Atlantic Regional
 
 #include <iostream>
-#include <algorithm>
 #include <vector>
-#include <utility>
+#include <algorithm>
 #include <cmath>
 
 using namespace std;
 
-#define ii pair<int, int>
 #define ll long long
-#define EPS .0000001
+
+typedef int ptsT;
+typedef ll ptlT;
+
+const double EPS = 1e-9;
 
 struct pt
 {
-    ll x, y;
+    ptsT x, y;
 
-    bool operator < (pt b) const
-    {
-        if (y < b.y)
-        {
-            return true;
-        }
-        else if(abs(y - b.y) < EPS)
-        {
-            if (x < b.x)
-            {
-                return true;
-            }
+    bool operator < (const pt &o) const {return make_pair(y, x) < make_pair(o.y, o.x);}
+    bool operator == (const pt &o) const {return abs(x - o.x) < EPS and abs(y - o.y) < EPS;}
 
-        }
-        return false;
-    }
+    pt operator + (const pt &o){return {x + o.x, y + o.y};}
+    pt operator - (const pt &o){return {x - o.x, y - o.y};}
+
+    ptlT operator ^ (const pt &o){return (ptlT) x * o.y - (ptlT) y * o.x;}
+    ptlT operator * (const pt &o){return (ptlT) x * o.x + (ptlT) y * o.y;}
+
+    ptlT norm2(){return *this * *this;}
+    ptlT dist2(const pt &o){return (*this - o).norm2();}
 };
 
-int orientation(pt a, pt b, pt c)
-{
-    long long val1 = (long long) (b.y - a.y) * (c.x - b.x);
-    long long val2 = (long long) (b.x - a.x) * (c.y - b.y);
+int sgn(ptlT i) {return (i > -EPS) - (i < EPS);}
+int orientation(pt &o, pt &a, pt &b) {return sgn((b - o) ^ (a - o));} //cw: 1, ccw: -1, col: 0
 
-    if (val1 < val2)
+typedef vector<pt> polygon;
+int prev(int i, int n, int st = 1){return (i - st + n) % n;}
+int next(int i, int n, int st = 1){return (i + st) % n;};
+
+vector <ptlT> getShoelace(polygon &poly)
+{
+    int sz = poly.size();
+    vector <ptlT> shoelace(sz + 1);
+    for (int i = 0; i < sz; i++)
     {
-        return -1; //counterclockwise
+        shoelace[i + 1] = shoelace[i] + (poly[i] ^ poly[next(i, sz)]);
     }
-    else if (val1 > val2)
-    {
-        return 1; //clockwise
-    }
-    else
-    {
-        return 0; //collinear
-    }
+    return shoelace;
 }
 
-
-bool inTriangle(pt a, pt b, pt c, pt p)
+int pointInTriangle(polygon &triangle, pt &p) //inside: -1, outside: 1, on: 0
 {
-    if (orientation(a, b, c) != orientation(a, b, p))
-    {
-        return false;
-    }
-    if (orientation(b, c, a) != orientation(b, c, p))
-    {
-        return false;
-    }
-    if (orientation(c, a, b) != orientation(c, a, p))
-    {
-        return false;
-    }
-    return true;
-
+    int orient[3];
+    for (int i = 0; i < 3; i++)
+        orient[i] = orientation(triangle[i], triangle[next(i, 3)], p);
+    if (orient[0] == orient[1] and orient[1] == orient[2]) return -1;
+    for (int i = 0; i < 3; i++) if (orient[i] * orient[next(i, 3)] == -1) return 1;
+    return 0;
 }
 
-
-vector <pt> grahamScan(vector <pt> points) //creates clockwise convex polygon
+polygon andrewMonotoneChain(vector <pt> &points)
 {
-    pt bottom = points[0];
-    int bottomInd = -1;
-
-    for (int i = 1; i < points.size(); i++)
+    sort(points.begin(), points.end());
+    points.erase(unique(points.begin(), points.end()), points.end());
+    polygon hull;
+    for (int i = 0; i < 2; i++)
     {
-        if (points[i].y == bottom.y)
+        int s = hull.size();
+        for (pt &p: points)
         {
-            if (points[i].x < bottom.x)
-            {
-                bottom = points[i];
-                bottomInd = i;
-            }
+            while(hull.size() >= s + 2 and orientation(hull.rbegin()[1], hull.rbegin()[0], p) != 1)
+                hull.pop_back();
+            hull.push_back(p);
         }
-        else if(points[i].y < bottom.y)
-        {
-            bottom = points[i];
-            bottomInd = i;
-        }
+        hull.pop_back();
+        reverse(points.begin(), points.end());
     }
-
-
-    sort(points.begin(), points.end(),
-         [bottom](pt a, pt b)
-    {
-        if (bottom.x == a.x and bottom.y == a.y)
-        {
-            return true;
-        }
-        if (bottom.x == b.x and bottom.y == b.y)
-        {
-            return false;
-        }
-        int orient = orientation(bottom, a, b);
-        if (orient == 0)
-        {
-            int dista = abs(a.x - bottom.x);
-            int distb = abs(b.x - bottom.x);
-
-            if (dista == distb)
-            {
-                return b < a;
-            }
-            return dista > distb;
-        }
-        return orient == 1;
-    });
-
-    bool includeNext = true;
-
-    vector <pt> vPoints = {points[0]};
-    vector <pt> skipped;
-    for (int i = 1; i < points.size(); i++)
-    {
-        if (includeNext)
-        {
-            vPoints.push_back(points[i]);
-        }
-        else
-        {
-            skipped.push_back(points[i]);
-        }
-
-        includeNext = true;
-        if(orientation(points[0], points[i], points[i + 1]) == 0)
-        {
-            includeNext = false;
-        }
-    }
-
-    vector <pt> hull;
-    hull.push_back(vPoints[0]);
-    hull.push_back(vPoints[1]);
-    hull.push_back(vPoints[2]);
-
-    for (int i = 3; i < vPoints.size(); i++)
-    {
-        while (orientation(hull[hull.size() - 2], hull[hull.size() - 1], vPoints[i]) != 1) // != 1 if you don't want points on hull, == -1 if include points on hull
-        {
-            hull.pop_back();
-        }
-        hull.push_back(vPoints[i]);
-    }
-
+    if (hull.size() == 2 and hull[0] == hull[1]) hull.pop_back();
     return hull;
 }
 
-int ump_ccw(int i, int offset, int sz)
+pair <bool, int> pointInConvexPolygon(polygon &poly, pt &point)
 {
-    return (sz + offset - i) % sz;
+    auto cmp = [&poly](pt a, pt b){return orientation(poly[0], a, b) == 1;};
+    int pos = upper_bound(poly.begin() + 1, poly.end(), point, cmp) - poly.begin();
+    if (pos == 1 or pos == poly.size()) return {false, pos};
+    polygon triangle = {poly[pos - 1], poly[pos], poly[0]};
+    return {pointInTriangle(triangle, point) != 1, pos};
 }
 
-int ump_cw(int i, int offset, int sz)
-{
-    return (sz + offset + i) % sz;
-}
-
-pair <int, int> findTangent(vector <pt> &hull, pt p, pt center)
+pair <int, int> findTangent(polygon &hull, pt p)
 {
     int sz = hull.size();
-    int rightInit;
-    int leftInit;
+    auto res = pointInConvexPolygon(hull, p);
+    if (res.first) return {-1, -1};
 
-    if (orientation(center, hull[0], p) != 1 and orientation(center, hull[sz - 1], p) != -1)
-    {
-        rightInit = 0;
-    }
-    else
-    {
-        rightInit = lower_bound(hull.begin(), hull.end(), p, [center](pt a, pt b)
-                          {
-                                return orientation(center, a, b) == 1;
-                          }) - hull.begin();
-    }
+    int rightInit = res.second, leftInit = prev(res.second, sz);
 
-    leftInit = (sz + rightInit - 1) % sz;
-
-    if (inTriangle(center, hull[leftInit], hull[rightInit], p))
-    {
-        return {-1, -1};
-    }
-
-
-    int left, right;
-
-    int l, r;
-    l = 0;
-    r = sz - 1;
-
+    int l = 0, r = sz - 1;
     while (l < r)
     {
         int m = (l + r + 1) / 2;
-
-        pt curr = hull[ump_ccw(m, leftInit, sz)];
-        pt next = hull[(ump_ccw(m, leftInit, sz) + 1) % sz];
-
-        if (orientation(p, curr, next) != 1 and orientation(center, curr, p) != -1)
-        {
-            l = m;
-        }
-        else
-        {
-            r = m - 1;
-        }
+        pt curr = hull[prev(leftInit, sz, m)];
+        pt nxt = hull[next(prev(leftInit, sz, m), sz)];
+        if (orientation(p, curr, nxt) != 1 and orientation(hull[0], curr, p) != -1) l = m;
+        else r = m - 1;
     }
+    int leftTangent = prev(leftInit, sz, l);
 
-    left = ump_ccw(l, leftInit, sz);
-
-    l = 0;
-    r = sz - 1;
-
+    l = 0, r = sz - 1;
     while (l < r)
     {
         int m = (l + r + 1) / 2;
-
-        pt curr = hull[ump_cw(m, rightInit, sz)];
-        pt next = hull[(sz + ump_cw(m, rightInit, sz) - 1) % sz];
-
-        if (orientation(p, curr, next) != -1 and orientation(center, curr, p) != 1)
-        {
-            l = m;
-        }
-        else
-        {
-            r = m - 1;
-        }
+        pt curr = hull[next(rightInit, sz, m)];
+        pt nxt = hull[prev(next(rightInit, sz, m), sz)];
+        if (orientation(p, curr, nxt) != -1 and orientation(hull[0], curr, p) != 1) l = m;
+        else r = m - 1;
     }
+    int rightTangent = next(rightInit, sz, l);
 
-    right = ump_cw(l, rightInit, sz);
-
-    pair <int, int> res =  {left, right};
-    return res;
+    return {leftTangent, rightTangent};
 }
-
-ll shoelaceLink(pt a, pt b)
-{
-    return (ll) a.x * b.y - (ll) a.y * b.x;
-}
-
 
 int main()
 {
     ios::sync_with_stdio(false);
     cin.tie(NULL);
+
     int n, k;
     while (cin>>n>>k)
     {
-        vector <pt> town(k);
+        vector <pt> town(k), options(n - k);
         for (int i = 0; i < k; i++)
         {
             cin>>town[i].x>>town[i].y;
         }
-
-        vector <pt> options(n - k);
         for (int i = 0; i < n - k; i++)
         {
             cin>>options[i].x>>options[i].y;
         }
 
-        vector <pt> poly = grahamScan(town);
+        vector <pt> poly = andrewMonotoneChain(town);
+        auto shoelace = getShoelace(poly);
 
-        vector <ll> shoelace (poly.size() + 1);
-        shoelace[0] = 0;
-
-        pt center = {0, 0};
-
-        for (int i = 1; i <= poly.size(); i++)
-        {
-            pt prevPt = poly[i - 1];
-            pt currPt = poly[i % poly.size()];
-            shoelace[i] = shoelace[i - 1] + shoelaceLink(prevPt, currPt);
-
-            center.x += double (poly[i - 1].x) / poly.size();
-            center.y += double (poly[i - 1].y) / poly.size();
-        }
-
-        ll maxArea = 0;
-        maxArea = abs(shoelace[poly.size()]);
-
+        ptlT maxArea = abs(shoelace[poly.size()]);
         for (pt p: options)
         {
-            pair <int, int> tangents = findTangent(poly, p, center);
+            pair <int, int> tangents = findTangent(poly, p);
+            int lt = tangents.first, rt = tangents.second;
+            if (lt == -1 and rt == -1) continue;
 
-            int leftTangent = tangents.first;
-            int rightTangent = tangents.second;
+            ptlT area = (poly[lt] ^ p) + (p ^ poly[rt]);
+            if (lt < rt)  area += shoelace[lt] + (shoelace[poly.size()] - shoelace[rt]);
+            else area += shoelace[lt] - shoelace[rt];
 
-            if (leftTangent == -1) //point is in polygon
-            {
-                continue;
-            }
-
-            ll area = 0;
-            if (leftTangent < rightTangent)
-            {
-                area = (ll) shoelace[leftTangent] + (ll) shoelace[poly.size()] - (ll) shoelace[rightTangent] + shoelaceLink(poly[leftTangent], p) + shoelaceLink(p, poly[rightTangent]);
-            }
-
-            else
-            {
-                area = (ll) shoelace[leftTangent] - (ll) shoelace[rightTangent] + shoelaceLink(poly[leftTangent], p) + shoelaceLink(p, poly[rightTangent]);
-            }
-
-            area = abs(area);
-            maxArea = max(area, maxArea);
+            maxArea = max(abs(area), maxArea);
         }
 
-        if (maxArea & 1)
-        {
-            cout<<maxArea / 2<<".5"<<'\n';
-
-        }
-        else
-        {
-            cout<<maxArea / 2<<".0"<<'\n';
-
-        }
-
+        if (maxArea & 1) cout<<maxArea / 2<<".5"<<'\n';
+        else cout<<maxArea / 2<<".0"<<'\n';
     }
 }
-
