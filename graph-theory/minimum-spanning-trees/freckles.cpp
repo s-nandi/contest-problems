@@ -1,3 +1,6 @@
+//minimum spanning tree
+//https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=975
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -5,6 +8,8 @@
 #include <cmath>
 
 using namespace std;
+
+typedef double edgeT;
 
 struct pt
 {
@@ -18,54 +23,47 @@ struct pt
 struct edge
 {
     int i, j;
-    double d;
-    bool operator < (edge o) const
-    {
-        if (d != o.d) return d < o.d;
-        else return make_pair(i, j) < make_pair(o.i, o.j);
-    }
+    edgeT d;
+    bool operator < (const edge &o) const {return d < o.d;}
 };
 
 struct disjointSetUnion
 {
+    int sz;
     vector <int> par;
-    disjointSetUnion(int n)
+
+    disjointSetUnion(int s)
     {
-        par.resize(n);
-        for (int i = 0; i < n; i++)
-        {
-            par[i] = i;
-        }
+        sz = s;
+        par.resize(sz);
+        for (int i = 0; i < sz; i++) par[i] = i;
     }
+
     int findRoot(int i)
     {
-        int parent = (par[i] == i ? i : findRoot(par[i]));
-        return parent;
+        return par[i] == i ? i : (par[i] = findRoot(par[i]));
     }
+
     void unionElements(int i, int j)
     {
         par[findRoot(i)] = findRoot(j);
     }
+
+    bool sameComponent(int i, int j) {return findRoot(i) == findRoot(j);}
 };
 
-double kruskal(vector <edge> &edges, int n)
+edgeT kruskal(vector <edge> &edges, int n)
 {
     sort(edges.begin(), edges.end());
-
     disjointSetUnion dsu(n);
-    double cost = 0.0;
+    edgeT cost = 0;
     int numEdges = 0;
-
-    for (const edge &e: edges)
+    for (const edge &e: edges) if (!dsu.sameComponent(e.i, e.j))
     {
-        if (dsu.findRoot(e.i) != dsu.findRoot(e.j))
-        {
-            dsu.unionElements(e.i, e.j);
-            cost += e.d;
-            if (++numEdges == n - 1) break;
-        }
+        dsu.unionElements(e.i, e.j);
+        cost += e.d;
+        if (++numEdges == n - 1) break;
     }
-
     return cost;
 }
 
@@ -92,10 +90,7 @@ int main()
                 edges.push_back({i, j, points[i].distance(points[j])});
             }
         }
-
-        double cost = kruskal(edges, n);
-
-        cout<<setprecision(2)<<fixed<<cost<<'\n';
+        cout<<setprecision(2)<<fixed<<kruskal(edges, n)<<'\n';
         if (T) cout<<'\n';
     }
 
