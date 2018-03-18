@@ -42,7 +42,7 @@ struct eulerTour
             inDegree[e.to]++, outDegree[i]++;
         }
         int numLess = 0, numGreater = 0;
-        for (int i = 0; i < 26; i++)
+        for (int i = 0; i < n; i++)
         {
             if (!inDegree[i] and !outDegree[i]) continue;
 
