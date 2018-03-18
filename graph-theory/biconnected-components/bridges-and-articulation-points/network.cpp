@@ -1,4 +1,4 @@
-//finding cut vertices, string processing
+//finding articulation point, string processing
 //https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=251
 
 #include <iostream>
@@ -7,70 +7,56 @@
 
 using namespace std;
 
-struct edge
-{
-    int to, id;
-};
-
+struct edge{int to, id;};
 typedef vector<vector<edge>> graph;
 
-struct node
+struct tarjanBCC
 {
-    int depth = -1;
-    int lowlink = -1;
-};
+    int n;
+    graph g;
+    vector <int> depths, lowlinks;
+    vector <bool> cv;
+    vector <int> cutVertex;
 
-bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vector <bool> &cutVertex)
-{
-    if (nodes[curr].depth != -1)
+    tarjanBCC(graph &gr)
     {
-        nodes[prev].lowlink = min(nodes[prev].lowlink, nodes[curr].depth);
-        return false;
+        g = gr, n = g.size();
+        depths.resize(n, -1), lowlinks.resize(n);
+        cv.resize(n);
+        getBcc();
     }
 
-    nodes[curr].depth = prev != -1 ? nodes[prev].depth + 1 : 0;
-    nodes[curr].lowlink = nodes[curr].depth;
-
-    int outEdge = 0;
-    for (edge e: g[curr]) if (e.id != prevEdge)
+    void getBcc()
     {
-        if (dfs(g, e.to, curr, e.id, nodes, cutVertex))
-        {
-            nodes[curr].lowlink = min(nodes[curr].lowlink, nodes[e.to].lowlink);
-            outEdge++;
+        for (int i = 0; i < n; i++) if (depths[i] == -1)
+            dfs(i);
+        for (int i = 0; i < n; i++) if (cv[i])
+            cutVertex.push_back(i);
+    }
 
-            if (prev != -1 ? nodes[e.to].lowlink >= nodes[curr].depth : outEdge > 1)
+    bool dfs(int curr, int prev = -1, int pid = -1)
+    {
+        if (depths[curr] != -1)
+        {
+            lowlinks[prev] = min(lowlinks[prev], depths[curr]);
+            return false;
+        }
+
+        lowlinks[curr] = depths[curr] = prev != -1 ? depths[prev] + 1 : 0;
+        bool out = false;
+        for (edge e: g[curr]) if (e.id != pid)
+        {
+            if (dfs(e.to, curr, e.id))
             {
-                cutVertex[curr] = true;
+                lowlinks[curr] = min(lowlinks[curr], lowlinks[e.to]);
+                if (prev != -1 ? lowlinks[e.to] >= depths[curr] : out)
+                    cv[curr] = true;
+                out = true;
             }
         }
+        return true;
     }
-
-    return true;
-}
-
-vector <int> cutVertices(graph &g, int n)
-{
-    vector <node> nodes(n);
-    vector <bool> cutVertex(n);
-
-    for (int i = 0; i < n; i++) if (nodes[i].depth == -1)
-    {
-        dfs(g, i, -1, -1, nodes, cutVertex);
-    }
-
-    vector <int> result;
-
-    for (int i = 0; i < n; i++)
-    {
-        if (cutVertex[i])
-        {
-            result.push_back(i);
-        }
-    }
-
-    return result;
-}
+};
 
 int main()
 {
@@ -90,7 +76,8 @@ int main()
 
             istringstream iss(s);
             int a, b;
-            iss>>a; --a;
+            iss>>a;
+            --a;
             while(iss >> b)
             {
                 --b;
@@ -99,9 +86,8 @@ int main()
                 index++;
             }
         }
-
-        auto res = cutVertices(g, n);
-        cout<<res.size()<<'\n';
+        auto bcc = tarjanBCC(g);
+        cout<<bcc.cutVertex.size()<<'\n';
     }
 
     return 0;
