@@ -27,15 +27,15 @@ graph getTranspose(graph &g)
 
 struct kosarajuSCC
 {
-    int n, sz = 0; //sz is # of scc -> caution!! don't use components.size()
+    int n, sz = 0;
     graph g, t;
     vector <bool> visited; deque <int> ordered;
-    vector <vector<int>> components; vector <int> category; /*PS*/
+    vector <vector<int>> components;
 
     kosarajuSCC(graph &gr)
     {
         g = gr, t = getTranspose(gr), n = g.size();
-        visited.resize(n), components.resize(n), category.resize(n);
+        visited.resize(n), components.resize(n);
         getScc();
     }
 
@@ -60,7 +60,7 @@ struct kosarajuSCC
     {
         if (!visited[curr]) return;
         visited[curr] = false;
-        components[sz].push_back(curr), category[curr] = sz;
+        components[sz].push_back(curr);
         for (edge e: t[curr]) if (visited[e.to])
             categorize(e.to);
     }
