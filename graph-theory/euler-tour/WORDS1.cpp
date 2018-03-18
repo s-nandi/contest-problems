@@ -7,30 +7,71 @@
 
 using namespace std;
 
-struct edge
-{
-    int to, id;
-};
-
+struct edge{int to, id;};
 typedef vector<vector<edge>> graph;
 
-void dfs(graph &g, int curr, vector <bool> &used, deque <int> &tour)
+struct eulerTour
 {
-    for (edge e: g[curr]) if (!used[e.id])
-    {
-        used[e.id] = true;
-        dfs(g, e.to, used, tour);
-    }
-    tour.push_front(curr);
-}
-
-deque <int> eulerTour(graph &g, int start, int m)
-{
-    vector <bool> used(m);
+    int n, m = 0, root = -1;
+    graph g;
+    bool isFeasible;
+    vector <bool> used;
     deque <int> tour;
-    dfs(g, start, used, tour);
-    return tour;
-}
+
+    eulerTour(graph &gr)
+    {
+        g = gr, n = g.size();
+        if (!feasible()) isFeasible = false;
+        else
+        {
+            getEdge(), used.resize(m);
+            dfs(root), isFeasible = tour.size() == m + 1;
+        }
+    }
+
+    void getEdge()
+    {
+        for (int i = 0; i < n; i++) m += g[i].size();
+    }
+
+    bool feasible()
+    {
+        vector <int> inDegree(n), outDegree(n);
+        for (int i = 0; i < n; i++) for (edge e: g[i])
+        {
+            inDegree[e.to]++, outDegree[i]++;
+        }
+        int numLess = 0, numGreater = 0;
+        for (int i = 0; i < 26; i++)
+        {
+            if (!inDegree[i] and !outDegree[i]) continue;
+
+            int diff = inDegree[i] - outDegree[i];
+            if (diff > 1 or diff < -1) return false;
+            if (diff < 0)
+            {
+                if (++numLess > 1) return false;
+                root = i;
+            }
+            else if (diff > 0)
+            {
+                if (++numGreater > 1) return false;
+            }
+            else if(root == -1) root = i;
+        }
+        return numLess == numGreater;
+    }
+
+    void dfs(int curr)
+    {
+        for (edge e: g[curr]) if (!used[e.id])
+        {
+            used[e.id] = true;
+            dfs(e.to);
+        }
+        tour.push_front(curr);
+    }
+};
 
 int main()
 {
@@ -46,8 +87,6 @@ int main()
         cin>>n;
 
         graph g(26);
-        vector <int> inDegree(26), outDegree(26);
-
         for (int i = 0; i < n; i++)
         {
             string s;
@@ -55,54 +94,12 @@ int main()
 
             int in = s[0] - 'a', out = s[s.length() - 1] - 'a';
             g[in].push_back({out, i});
-            inDegree[out]++, outDegree[in]++;
         }
 
-        bool fail = false;
-        int numDiff = 0, start = -1;
-        for (int i = 0; i < 26; i++)
-        {
-            int diff = inDegree[i] - outDegree[i];
-            if (diff != 0)
-            {
-                if (diff == 1 or diff == -1)
-                {
-                    numDiff++;
-                    if (diff == -1) start = i;
-                }
-                else
-                {
-                    fail = true;
-                    break;
-                }
-            }
-            else if(start == -1)
-            {
-                start = i;
-            }
-        }
+        auto etour = eulerTour(g);
 
-        if (numDiff != 2 and numDiff != 0)
-        {
-            fail = true;
-        }
-
-        if (fail)
-        {
-            cout<<"The door cannot be opened."<<'\n';
-            continue;
-        }
-
-        auto tour = eulerTour(g, start, n);
-
-        if (tour.size() == n + 1)
-        {
-            cout<<"Ordering is possible."<<'\n';
-        }
-        else
-        {
-            cout<<"The door cannot be opened."<<'\n';
-        }
+        if (etour.isFeasible) cout<<"Ordering is possible."<<'\n';
+        else cout<<"The door cannot be opened."<<'\n';
     }
 
     return 0;
