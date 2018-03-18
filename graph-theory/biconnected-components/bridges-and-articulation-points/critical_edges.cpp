@@ -7,55 +7,60 @@
 
 using namespace std;
 
-struct edge
-{
-    int to, id;
-};
-
+struct edge{int to, id;};
 typedef vector<vector<edge>> graph;
-typedef pair<int, int> edgeObject;
+typedef vector<pair<int, int>> edgelist;
 
-struct node
+struct tarjanBCC
 {
-    int depth = -1;
-    int lowlink = -1;
-};
+    int n, m = 0;
+    graph g;
+    vector <int> depths, lowlinks, bridge;
+    vector <bool> br;
 
-bool dfs(graph &g, int curr, int prev, int prevEdge, vector <node> &nodes, vector <bool> &bridge)
-{
-    if (nodes[curr].depth != -1)
+    tarjanBCC(graph &gr)
     {
-        nodes[prev].lowlink = min(nodes[prev].lowlink, nodes[curr].depth);
-        return false;
+        g = gr, n = g.size(), getEdge();
+        depths.resize(n, -1), lowlinks.resize(n);
+        br.resize(m);
+        getBcc();
     }
 
-    nodes[curr].depth = prev != -1 ? nodes[prev].depth + 1 : 0;
-    nodes[curr].lowlink = nodes[curr].depth;
-
-    for (edge e: g[curr]) if (e.id != prevEdge)
+    void getEdge()
     {
-        if (dfs(g, e.to, curr, e.id, nodes, bridge))
+        for (int i = 0; i < n; i++) m += g[i].size();
+        m /= 2;
+    }
+
+    void getBcc()
+    {
+        for (int i = 0; i < n; i++) if (depths[i] == -1)
+            dfs(i);
+        for (int i = 0; i < m; i++) if (br[i])
+            bridge.push_back(i);
+    }
+
+    bool dfs(int curr, int prev = -1, int pid = -1)
+    {
+        if (depths[curr] != -1)
         {
-            nodes[curr].lowlink = min(nodes[curr].lowlink, nodes[e.to].lowlink);
-            if (nodes[e.to].lowlink == nodes[e.to].depth)
+            lowlinks[prev] = min(lowlinks[prev], depths[curr]);
+            return false;
+        }
+
+        lowlinks[curr] = depths[curr] = prev != -1 ? depths[prev] + 1 : 0;
+        for (edge e: g[curr]) if (e.id != pid)
+        {
+            if (dfs(e.to, curr, e.id))
             {
-                bridge[e.id] = true;
+                lowlinks[curr] = min(lowlinks[curr], lowlinks[e.to]);
+                if (lowlinks[e.to] > depths[curr])
+                    br[e.id] = true;
             }
         }
+        return true;
     }
-
-    return true;
-}
-
-vector <bool> cutEdges(graph &g, int n, int m)
-{
-    vector <node> nodes(n);
-    vector <bool> bridge(m);
-
-    dfs(g, 0, -1, -1, nodes, bridge);
-
-    return bridge;
-}
+};
 
 int main()
 {
@@ -71,7 +76,7 @@ int main()
         cin>>n>>m;
 
         graph g(n);
-        vector <edgeObject> edges;
+        edgelist edges;
 
         for (int i = 0; i < m; i++)
         {
@@ -83,13 +88,12 @@ int main()
             edges.push_back({a, b});
         }
 
-        auto bridge = cutEdges(g, n, m);
-        vector <edgeObject> sol;
+        auto bcc = tarjanBCC(g);
 
-        for (int i = 0; i < m; i++) if (bridge[i])
+        edgelist sol;
+        for (int i: bcc.bridge)
         {
             if (edges[i].first > edges[i].second) swap(edges[i].first, edges[i].second);
-
             sol.push_back({edges[i].first, edges[i].second});
         }
         sort(sol.begin(), sol.end());
