@@ -9,68 +9,64 @@
 
 using namespace std;
 
-#define INF 1231231234
+const int INF = 1231231234;
+const int MAXP = 1000000;
 
-struct pt
+struct edge{int to;};
+typedef vector <vector<edge>> graph;
+
+graph getTranspose(graph &g)
 {
-    int x, y;
+    graph t(g.size());
+    for (int i = 0; i < g.size(); i++) for (edge e: g[i])
+    {
+        t[e.to].push_back({i});
+    }
+    return t;
+}
+
+struct kosarajuSCC
+{
+    int n, sz = 0;
+    graph g, t;
+    vector <bool> visited; deque <int> ordered;
+    vector <int> category;
+
+    kosarajuSCC(graph &gr)
+    {
+        g = gr, t = getTranspose(gr), n = g.size();
+        visited.resize(n), category.resize(n);
+        getScc();
+    }
+
+    void getScc()
+    {
+        for (int i = 0; i < n; i++) if (!visited[i])
+            ordering(i);
+        for (int i: ordered) if (visited[i])
+            categorize(i), ++sz;
+    }
+
+    void ordering(int curr)
+    {
+        if (visited[curr]) return;
+        visited[curr] = true;
+        for (edge e: g[curr]) if (!visited[e.to])
+            ordering(e.to);
+        ordered.push_front(curr);
+    }
+
+    void categorize(int curr)
+    {
+        if (!visited[curr]) return;
+        visited[curr] = false;
+        category[curr] = sz;
+        for (edge e: t[curr]) if (visited[e.to])
+            categorize(e.to);
+    }
 };
 
-typedef vector <vector<int>> graph;
-
-void ordering(graph &g, int curr, vector <int> &visited, deque <int> &ordered)
-{
-    if (visited[curr]) return;
-    visited[curr] = 1;
-    for (int neighbor: g[curr]) if (!visited[neighbor])
-    {
-        ordering(g, neighbor, visited, ordered);
-    }
-    ordered.push_front(curr);
-}
-
-void categorize(graph &t, int curr, vector <int> &visited, vector <vector<int>> &components)
-{
-    if (visited[curr]) return;
-    visited[curr] = 1;
-    components.rbegin() -> push_back(curr);
-    for (int neighbor: t[curr]) if (!visited[neighbor])
-    {
-        categorize(t, neighbor, visited, components);
-    }
-}
-
-vector <vector<int>> kosarajuSCC(graph &g)
-{
-    int n = g.size();
-    graph t(n);
-    vector <int> visited(n);
-    deque <int> ordered;
-    vector <vector<int>> components;
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j: g[i])
-        {
-            t[j].push_back(i);
-        }
-    }
-
-    for (int i = 0; i < n; i++) if (!visited[i])
-    {
-        ordering(g, i, visited, ordered);
-    }
-
-    fill(visited.begin(), visited.end(), 0);
-
-    for (int i: ordered) if (!visited[i])
-    {
-          components.push_back({});
-          categorize(t, i, visited, components);
-    }
-
-    return components;
-}
+struct pt{int x, y;};
 
 bool check(vector <pt> &points, int power)
 {
@@ -83,40 +79,30 @@ bool check(vector <pt> &points, int power)
         {
             if (points[i].x == points[j].x and abs(points[i].y - points[j].y) <= 2 * power)
             {
-                g[2 * i + 1].push_back(2 * j);
-                g[2 * j + 1].push_back(2 * i);
+                g[2 * i + 1].push_back({2 * j});
+                g[2 * j + 1].push_back({2 * i});
             }
             else if(points[i].y == points[j].y and abs(points[i].x - points[j].x) <= 2 * power)
             {
-                g[2 * i].push_back(2 * j + 1);
-                g[2 * j].push_back(2 * i + 1);
+                g[2 * i].push_back({2 * j + 1});
+                g[2 * j].push_back({2 * i + 1});
             }
         }
     }
 
-    auto components = kosarajuSCC(g);
-    vector <int> numComponent(2 * n);
-
-    for (int i = 0; i < components.size(); i++)
-    {
-        for (int j: components[i])
-        {
-            numComponent[j] = i;
-        }
-    }
-
+    auto scc = kosarajuSCC(g);
     for (int i = 0; i < 2 * n; i += 2)
     {
-        if (numComponent[i] == numComponent[i + 1])
-        {
-            return false;
-        }
+        if (scc.category[i] == scc.category[i + 1]) return false;
     }
     return true;
 }
 
 int main()
 {
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+
     int n;
     while(cin>>n)
     {
@@ -127,31 +113,15 @@ int main()
             cin>>points[i].x>>points[i].y;
         }
 
-        int left = 0;
-        int right = 1000001;
-
-        while (left < right)
+        int l = 0, r = MAXP + 1;
+        while (l < r)
         {
-            int mid = (left + right + 1) / 2;
-            bool val = check(points, mid);
-
-            if (val)
-            {
-                left = mid;
-            }
-            else
-            {
-                right = mid - 1;
-            }
+            int m = (l + r + 1) / 2;
+            if (check(points, m)) l = m;
+            else r = m - 1;
         }
-        if (left == 1000001)
-        {
-            cout<<"UNLIMITED"<<'\n';
-        }
-        else
-        {
-            cout<<left<<'\n';
-        }
+        if (l > MAXP) cout<<"UNLIMITED"<<'\n';
+        else cout<<l<<'\n';
     }
 
     return 0;
