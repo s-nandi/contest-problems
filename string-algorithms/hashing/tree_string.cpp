@@ -3,115 +3,93 @@
 
 #include <iostream>
 #include <vector>
-#include <utility>
+#include <algorithm>
 
 using namespace std;
 
 #define ll long long
-#define MAXN 1000005
 
-typedef vector <vector<int>> graph;
+const int MAXN = 300005;
+const int alpha = 37;
+const int MOD[2] = {1000000007, 1000000009};
 
-int alpha[2] = {37, 53};
-int MOD[2] = {1000000007, 1000000009};
-vector <int> powAlpha[2];
+struct edge{int to; string str;};
+typedef vector <vector<edge>> graph;
 
-int mult(int a, int b, int t)
-{
-    ll res = ((ll) a * b) % MOD[t];
-    return res;
-}
-
-void precompute()
+int pAlpha[2][MAXN];
+void precompute_hash()
 {
     for (int t = 0; t < 2; t++)
     {
-        powAlpha[t].resize(MAXN);
-        powAlpha[t][0] = 1;
+        pAlpha[t][0] = 1;
         for (int i = 1; i < MAXN; i++)
-        {
-            powAlpha[t][i] = mult(alpha[t], powAlpha[t][i - 1], t);
-        }
+            pAlpha[t][i] = (ll) alpha * pAlpha[t][i - 1] % MOD[t];
     }
 }
 
-struct subHash
+int multpow(int v, int p, int t)
 {
-    int hashValue;
+    return (ll) v * pAlpha[t][p] % MOD[t];
+}
 
-    subHash(){}
-    subHash(int hashing, int power, int t)
-    {
-        hashValue = mult(hashing, powAlpha[t][MAXN - power], t);
-    }
-
-    bool operator == (subHash o) const
-    {
-        return hashValue == o.hashValue;
-    }
-};
+int mapping(char c){return c - '0' + 1;} //PS: remember to offset by 1
 
 struct hasher
 {
-    int len;
-    vector <int> prefixHash[2];
+    int len, t;
+    vector <int> h;
 
-    void addChar(char c)
+    hasher(int type) : t(type) {h.assign(1, 0), len = 0;}
+    void init(string &s)
     {
-        for (int t = 0; t < 2; t++)
-            prefixHash[t].push_back((prefixHash[t][len] + mult(powAlpha[t][len + 1], (c - 'a' + 1), t)) % MOD[t]);
+        h.assign(1, 0), len = 0;
+        for (int i = 0; i < s.length(); i++) push(s[i]);
+    }
+
+    void push(char c)
+    {
+        h.push_back(h[len] + multpow(mapping(c), len + 1, t));
+        h.back() %= MOD[t];
         len++;
     }
 
-    void removeChar()
-    {
-        for (int t = 0; t < 2; t++) prefixHash[t].pop_back();
-        len--;
-    }
+    void pop(){h.pop_back(), len--;}
 
-    void initialize(string &s)
+    int query(int l, int r)
     {
-        len = 0;
-        prefixHash[0] = {0}, prefixHash[1] = {0};
-        for (int i = 0; i < s.size(); i++) addChar(s[i]);
-    }
-
-    pair <subHash, subHash> query(int l, int r)
-    {
-        pair <subHash, subHash> res;
-        for (int t = 0; t < 2; t++)
-        {
-            auto curr = subHash((prefixHash[t][r] - prefixHash[t][l - 1] + MOD[t]) % MOD[t], l, t);
-            if (t == 0) res.first = curr;
-            else res.second = curr;
-        }
-        return res;
+        ++l, ++r;
+        return multpow((h[r] - h[l - 1] + MOD[t]) % MOD[t], MAXN - l, t);
     }
 };
 
-hasher wordHash, needleHash;
-pair <subHash, subHash> target;
+struct hashPair
+{
+    hasher h[2] = {hasher(0), hasher(1)};
 
-int dfs(graph &g, int curr, vector <string> &edges)
+    hasher& operator [] (int i){return h[i];}
+    int length(){return h[0].len;}
+    pair <int, int> query(int l, int r){return {h[0].query(l, r), h[1].query(l, r)};}
+};
+
+hashPair h, th;
+pair <int, int> target;
+
+int dfs(graph &g, int curr, const string &prevEdge)
 {
     int res = 0;
-    for (char c: edges[curr])
+    for (char c: prevEdge)
     {
-        wordHash.addChar(c);
-        if (wordHash.len >= needleHash.len)
+        h[0].push(c), h[1].push(c);
+        if (h.length() >= th.length())
         {
-            auto subword = wordHash.query(wordHash.len - needleHash.len + 1, wordHash.len);
-            if (subword == target) res++;
+            auto possible = h.query(h.length() - th.length(), h.length() - 1);
+            if (possible == target) res++;
         }
     }
-    for (int neighbor: g[curr])
-    {
-        res += dfs(g, neighbor, edges);
-    }
-    for (int i = 0; i < edges[curr].length(); i++)
-    {
-        wordHash.removeChar();
-    }
+    for (edge e: g[curr])
+        res += dfs(g, e.to, e.str);
+    for (int i = 0; i < prevEdge.length(); i++)
+        h[0].pop(), h[1].pop();
     return res;
 }
 
@@ -120,30 +98,25 @@ int main()
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    precompute();
+    precompute_hash();
+
     int n;
     cin>>n;
 
     graph g(n);
-    vector <string> edges(n);
-    edges[0] = "";
-
-    for (int i = 1; i <= n - 1; i++)
+    for (int i = 1; i < n; i++)
     {
-        int p; string s;
-        cin>>p>>s;
-        g[--p].push_back(i);
-        edges[i] = s;
+        int a; string s;
+        cin>>a>>s;
+        g[--a].push_back({i, s});
     }
+    string t;
+    cin>>t;
 
-    string needle, blank = "";
-    cin>>needle;
+    th[0].init(t), th[1].init(t);
+    target = th.query(0, t.length() - 1);
 
-    needleHash.initialize(needle);
-    wordHash.initialize(blank);
-
-    target = needleHash.query(1, needleHash.len);
-    cout<<dfs(g, 0, edges)<<'\n';
+    cout<<dfs(g, 0, "")<<'\n';
 
     return 0;
 }
