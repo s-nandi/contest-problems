@@ -3,97 +3,72 @@
 
 #include <iostream>
 #include <vector>
-#include <utility>
 #include <algorithm>
 
 using namespace std;
 
 #define ll long long
-#define MAXN 100005
 
-int alpha[2] = {13, 37};
-int MOD[2] = {1000000007, 1000000009};
-vector <int> powAlpha[2];
+const int MAXN = 100005;
+const int alpha = 37;
+const int MOD[2] = {1000000007, 1000000013};
 
-int mult(int a, int b, int t)
-{
-    ll res = ((ll) a * b) % MOD[t];
-    return res;
-}
-
-void precompute()
+int pAlpha[2][MAXN];
+void precompute_hash()
 {
     for (int t = 0; t < 2; t++)
     {
-        powAlpha[t].resize(MAXN);
-        powAlpha[t][0] = 1;
+        pAlpha[t][0] = 1;
         for (int i = 1; i < MAXN; i++)
-        {
-            powAlpha[t][i] = mult(alpha[t], powAlpha[t][i - 1], t);
-        }
+            pAlpha[t][i] = (ll) alpha * pAlpha[t][i - 1] % MOD[t];
     }
 }
 
-struct subHash
+int multpow(int v, int p, int t)
 {
-    int hashValue;
+    return (ll) v * pAlpha[t][p] % MOD[t];
+}
 
-    subHash(){}
-    subHash(int hashing, int power, int t)
-    {
-        hashValue = mult(hashing, powAlpha[t][MAXN - power], t);
-    }
-
-    bool operator < (subHash o) const
-    {
-        return hashValue < o.hashValue;
-    }
-
-     bool operator == (subHash o) const
-    {
-        return hashValue == o.hashValue;
-    }
-};
+int mapping(char c){return c - '0' + 1;}
 
 struct hasher
 {
-    int len;
-    vector <int> prefixHash[2];
+    int len = 0, t;
+    vector <int> h;
 
-    void add(char c)
+    hasher(int type) : t(type) {h.assign(1, 0);}
+    void init(string &s)
     {
-        for (int t = 0; t < 2; t++)
-            prefixHash[t].push_back((prefixHash[t][len] + mult(powAlpha[t][len + 1], (c - '0' + 1), t)) % MOD[t]);
+        h.assign(1, 0), len = 0;
+        for (int i = 0; i < s.length(); i++) push(s[i]);
+    }
+
+    void push(char c)
+    {
+        h.push_back(h[len] + multpow(mapping(c), len + 1, t));
+        h.back() %= MOD[t];
         len++;
     }
 
-    void initialize(string &s)
+    int query(int l, int r)
     {
-        len = 0;
-        prefixHash[0] = {0}, prefixHash[1] = {0};
-        for (int i = 0; i < s.size(); i++) add(s[i]);
-    }
-
-    pair <subHash, subHash> query(int l, int r)
-    {
-        pair <subHash, subHash> res;
-        for (int t = 0; t < 2; t++)
-        {
-            auto curr = subHash((prefixHash[t][r] - prefixHash[t][l - 1] + MOD[t]) % MOD[t], l, t);
-            if (t == 0) res.first = curr;
-            else res.second = curr;
-        }
-        return res;
+        return multpow((h[r] - h[l - 1] + MOD[t]) % MOD[t], MAXN - l, t);
     }
 };
 
-int numHash(hasher &h, int len)
+struct hashPair
 {
-    vector <pair<subHash, subHash>> hashes;
-    for (int i = 1; i + len - 1 <= h.len; i++)
-    {
-        hashes.push_back(h.query(i, i + len - 1));
-    }
+    hasher h[2] = {hasher(0), hasher(1)};
+
+    hasher& operator [] (int i){return h[i];}
+    pair <int, int> query(int l, int r){return {h[0].query(l, r), h[1].query(l, r)};}
+};
+
+int numHash(hashPair &hp, int len)
+{
+    vector <pair<int, int>> hashes;
+    for (int i = 1; i + len - 1 <= hp[0].len; i++)
+        hashes.push_back(hp.query(i, i + len - 1));
     sort(hashes.begin(), hashes.end());
     hashes.erase(unique(hashes.begin(), hashes.end()), hashes.end());
     return hashes.size();
@@ -111,27 +86,22 @@ int main()
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    precompute();
+    precompute_hash();
 
     string s;
     cin>>s;
 
-    hasher h; h.initialize(s);
+    hashPair h;
+    h[0].init(s), h[1].init(s);
 
     int l = 1, r = logn(s.length()) + 1;
     while(l < r)
     {
         int m = (l + r) / 2;
-
         ll taken = numHash(h, m), possible = 1 << m;
-        if (possible <= taken)
-        {
-            l = m + 1;
-        }
-        else
-        {
-            r = m;
-        }
+
+        if (possible <= taken) l = m + 1;
+        else r = m;
     }
     cout<<l<<'\n';
 
