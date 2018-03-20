@@ -82,8 +82,8 @@ struct ahoCorasick
 
     int findFirstMatch(string &s)
     {
-        int j = 0, res = INF;
-        for (int i = 0; i < s.length(); i++)
+        int res = INF;
+        for (int i = 0, j = 0; i < s.length(); i++)
         {
             int mc = mapping(s[i]);
 
