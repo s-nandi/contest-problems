@@ -9,43 +9,30 @@ using namespace std;
 
 #define ll long long
 
-vector <int> a, b;
-
 struct equation
 {
     ll m, b;
 
-    ll y(ll x0)
-    {
-        return m * x0 + b;
-    }
-
-    double intersect(equation o)
-    {
-        return double(o.b - b) / (m - o.m);
-    }
+    ll y(ll x0){return m * x0 + b;}
+    double intersect(equation o){return double(o.b - b) / (m - o.m);}
 };
 
-struct convexHullOptimization
+struct convexHullTrick
 {
     deque <equation> hull;
 
-    void addEquation(equation e)
+    void addEquation(const equation &e)
     {
-        while (hull.size() > 1 and hull[hull.size() - 2].intersect(e) < hull[hull.size() - 2].intersect(hull[hull.size() - 1]))
-        {
+        while (hull.size() > 1 and hull.rbegin()[1].intersect(e) < hull.rbegin()[1].intersect(hull.rbegin()[0]))
             hull.pop_back();
-        }
         hull.push_back(e);
     }
 
     ll getValue(ll x0)
     {
-        if (hull.size() == 0) return 0;
+        if (hull.empty()) return 0;
         while (hull.size() > 1 and hull[0].y(x0) > hull[1].y(x0))
-        {
             hull.pop_front();
-        }
         return hull[0].y(x0);
     }
 };
@@ -58,8 +45,7 @@ int main()
     int n;
     cin>>n;
 
-    a.resize(n), b.resize(n);
-
+    vector <int> a(n), b(n);
     for (int i = 0; i < n; i ++)
     {
         cin>>a[i];
@@ -69,7 +55,7 @@ int main()
         cin>>b[i];
     }
 
-    convexHullOptimization cht;
+    convexHullTrick cht;
 
     for (int i = 0; i < n; i++)
     {
