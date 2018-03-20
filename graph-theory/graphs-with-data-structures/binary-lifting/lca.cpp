@@ -6,22 +6,23 @@
 
 using namespace std;
 
-typedef vector<vector<int>> graph;
+struct edge{int to;};
+typedef vector<vector<edge>> graph;
 
 struct binaryLift
 {
-    int sz, h;
+    int sz, h = 0;
     graph g;
     vector <vector<int>> table;
-
     vector <int> depths;
 
     binaryLift(graph &gr)
     {
-        g = gr, sz = g.size(), h = 0, calcHeight(), table.resize(sz, vector<int>(h, -1));
-        depths.resize(sz);
+        g = gr, sz = g.size(), calcHeight();
+        table.resize(sz, vector<int>(h, -1)), depths.resize(sz);
         build(0);
     }
+
     void calcHeight(){while (1 << h < sz) h++;}
 
     void build(int curr, int depth = 0)
@@ -31,31 +32,26 @@ struct binaryLift
         {
             table[curr][i] = table[table[curr][i - 1]][i - 1];
         }
-        for (int neighbor: g[curr]) if (neighbor != table[curr][0])
+        for (edge e: g[curr]) if (e.to != table[curr][0])
         {
-            table[neighbor][0] = curr;
-            build(neighbor, depth + 1);
+            table[e.to][0] = curr;
+            build(e.to, depth + 1);
         }
     }
 
-    int lowestCommonAncestor(int l, int r)
+    int lca(int l, int r)
     {
         if (depths[l] > depths[r]) swap(l, r);
         for (int i = h - 1; i >= 0; i--)
         {
             if ((1 << i) & (depths[r] - depths[l]))
-            {
                 r = table[r][i];
-            }
         }
         if (l == r) return l;
-
         for (int i = h - 1; i >= 0; i--)
         {
             if (table[l][i] != table[r][i])
-            {
                 l = table[l][i], r = table[r][i];
-            }
         }
         return table[l][0];
     }
@@ -84,8 +80,8 @@ int main()
                 int b;
                 cin>>b;
                 --b;
-                g[a].push_back(b);
-                g[b].push_back(a);
+                g[a].push_back({b});
+                g[b].push_back({a});
             }
         }
         binaryLift bl(g);
@@ -99,9 +95,10 @@ int main()
         {
             int a, b;
             cin>>a>>b;
-            cout<<bl.lowestCommonAncestor(--a, --b) + 1<<'\n';
+            cout<<bl.lca(--a, --b) + 1<<'\n';
         }
     }
 
     return 0;
 }
+
