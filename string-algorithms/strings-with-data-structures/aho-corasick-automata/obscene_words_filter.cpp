@@ -8,36 +8,28 @@
 
 using namespace std;
 
-#define INF 1231231234
-#define MAXN 100001
-#define alpha 256
-
-int mapping(unsigned char c)
-{
-    return int(c);
-}
+const int INF = 1231231234;
+const int MAXN = 100001;
+const int alpha = 256;
 
 struct node
 {
     map <int, int> to;
-    int prefixLink, matchLink, len;
-
-    node()
-    {
-        prefixLink = -1, matchLink = -1, len = 0;
-    }
+    int prefixLink = -1, matchLink = -1, len = 0;
 };
 
 struct ahoCorasick
 {
-    vector <node> elements;
     int numNodes;
+    vector <node> elements;
 
     ahoCorasick()
     {
         numNodes = 1;
         elements.resize(MAXN);
     }
+
+    int mapping(unsigned char c){return c;}
 
     void addWord(string &s)
     {
@@ -55,10 +47,7 @@ struct ahoCorasick
         elements[curr].matchLink = curr;
     }
 
-    int next(int curr, int transition)
-    {
-        return elements[curr].to.count(transition) ? elements[curr].to[transition] : -1;
-    }
+    int next(int i, int t){return elements[i].to.count(t) ? elements[i].to[t] : -1;}
 
     void build()
     {
@@ -77,15 +66,12 @@ struct ahoCorasick
             q.pop();
 
             int j = elements[curr].prefixLink;
-
             if (elements[curr].matchLink == -1) elements[curr].matchLink = elements[j].matchLink;
 
             for (int c = 0; c < alpha; c++) if (next(curr, c) != -1)
             {
-                while (j > 0 and next(j, c) == -1)
-                {
-                    j = elements[j].prefixLink;
-                }
+                while (j > 0 and next(j, c) == -1) j = elements[j].prefixLink;
+
                 if (curr != 0 and next(j, c) != -1) elements[next(curr, c)].prefixLink = next(j, c);
                 else elements[next(curr, c)].prefixLink = 0;
 
@@ -94,25 +80,22 @@ struct ahoCorasick
         }
     }
 
-    int match(string &s)
+    int findFirstMatch(string &s)
     {
         int j = 0, res = INF;
         for (int i = 0; i < s.length(); i++)
         {
-            int c = mapping(s[i]);
-            while (j > 0 and next(j, c) == -1)
-            {
-                j = elements[j].prefixLink;
-            }
+            int mc = mapping(s[i]);
 
-            if (next(j, c) != -1) j = next(j, c);
+            while (j > 0 and next(j, mc) == -1) j = elements[j].prefixLink;
+
+            if (next(j, mc) != -1) j = next(j, mc);
             else j = 0;
 
             if (elements[j].matchLink != -1)
             {
                 res = min(res, i - elements[elements[j].matchLink].len + 1);
             }
-
         }
         return res;
     }
@@ -128,7 +111,6 @@ int main()
     cin.ignore();
 
     vector <string> strings[2];
-
     for (int i = 0; i < n; i++)
     {
         string s;
@@ -141,27 +123,19 @@ int main()
     cin.ignore();
 
     vector <string> lines(m);
-
-    for (int i = 0; i < m; i++)
-    {
-        getline(cin, lines[i]);
-    }
+    for (int i = 0; i < m; i++) getline(cin, lines[i]);
 
     pair <int, int> sol[2] = {{INF, INF}, {INF, INF}};
-
     for (int t = 0; t < 2; t++)
     {
         ahoCorasick ac;
 
-        for (int i = 0; i < strings[t].size(); i++)
-        {
-            ac.addWord(strings[t][i]);
-        }
+        for (int i = 0; i < strings[t].size(); i++) ac.addWord(strings[t][i]);
         ac.build();
 
         for (int i = 0; i < m; i++)
         {
-            int res = ac.match(lines[i]);
+            int res = ac.findFirstMatch(lines[i]);
             if (res != INF)
             {
                 sol[t] = {i + 1, res + 1};
@@ -172,14 +146,8 @@ int main()
 
     auto best = min(sol[0], sol[1]);
 
-    if (best.first != INF)
-    {
-        cout<<best.first<<" "<<best.second<<'\n';
-    }
-    else
-    {
-        cout<<"Passed"<<'\n';
-    }
+    if (best.first != INF) cout<<best.first<<" "<<best.second<<'\n';
+    else cout<<"Passed"<<'\n';
 
     return 0;
 }
