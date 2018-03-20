@@ -1,3 +1,6 @@
+//double hashing, dfs (backtracking)
+//http://codeforces.com/contest/291/problem/E
+
 #include <iostream>
 #include <vector>
 
