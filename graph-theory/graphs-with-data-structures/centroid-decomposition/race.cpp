@@ -1,5 +1,6 @@
 //centroid decomposition (sentinel visited array), dynamic programming, finding minimum edges to get path of distance k
 //https://contest.yandex.com/ioi/contest/571/problems/B/
+//IOI 2011
 
 #include <iostream>
 #include <vector>
