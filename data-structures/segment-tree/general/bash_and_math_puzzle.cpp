@@ -1,3 +1,6 @@
+//segment tree (branching), gcd
+//http://codeforces.com/problemset/problem/914/D
+
 #include <iostream>
 #include <vector>
 #include <tuple>
