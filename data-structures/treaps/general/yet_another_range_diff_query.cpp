@@ -4,65 +4,58 @@
 #include <iostream>
 #include <vector>
 #include <tuple>
+#include <random>
+#include <ctime>
 
 using namespace std;
 
-#define INF 1231231234
+const int INF = 1231231234;
 
 struct node
 {
-    int value, priority;
+    int key, priority;
     node *l, *r;
     int sz, minElement, maxElement, minDifference;
 
-    node(int k)
-    {
-        value = k, priority = (rand() << 16) ^ rand(), l = NULL, r = NULL, sz = 1, minElement = k, maxElement = k, minDifference = INF;
-    }
+    node(int k) : priority(rand() << 16 ^ rand()), l(NULL), r(NULL) {init(k);}
+    void init(int k) {sz = 1, key = k, minElement = k, maxElement = k, minDifference = INF;}
 
     node* refresh()
     {
-        sz = 1, maxElement = value, minElement = value, minDifference = INF;
+        init(key);
+        sz += getSz(l) + getSz(r);
         if (l)
         {
-            sz += l -> sz;
-            minElement = min(minElement, l -> minElement);
-            maxElement = max(maxElement, l -> maxElement);
-            minDifference = min(min(minDifference, l -> minDifference), value - (l -> maxElement));
+            minElement = min(minElement, l -> minElement), maxElement = max(maxElement, l -> maxElement);
+            minDifference = min(min(minDifference, l -> minDifference), key - (l -> maxElement));
         }
         if (r)
         {
-            sz += r -> sz;
-            minElement = min(minElement, r -> minElement);
-            maxElement = max(maxElement, r -> maxElement);
-            minDifference = min(min(minDifference, r -> minDifference), (r -> minElement) - value);
+            minElement = min(minElement, r -> minElement), maxElement = max(maxElement, r -> maxElement);
+            minDifference = min(min(minDifference, r -> minDifference), (r -> minElement) - key);
         }
         return this;
     }
+
+    static int getSz(node* n){return n ? n -> sz : 0;}
 };
 
 struct treap
 {
-    node* root;
+    node* root = NULL;
 
-    treap()
-    {
-        root = NULL;
-    }
-
-    pair <node*, node*> splitValue(node* curr, int value)
+    pair <node*, node*> splitKey(node* curr, int key)
     {
         if (!curr) return {NULL, NULL};
-
         pair <node*, node*> res;
-        if (curr -> value <= value)
+        if (curr -> key <= key)
         {
-            tie(curr -> r, res.second) = splitValue(curr -> r, value);
+            tie(curr -> r, res.second) = splitKey(curr -> r, key);
             res.first = curr -> refresh();
         }
         else
         {
-            tie(res.first, curr -> l) = splitValue(curr -> l, value);
+            tie(res.first, curr -> l) = splitKey(curr -> l, key);
             res.second = curr -> refresh();
         }
         return res;
@@ -71,11 +64,10 @@ struct treap
     pair <node*, node*> splitIndex(node* curr, int index)
     {
         if (!curr) return {NULL, NULL};
-
         pair <node*, node*> res;
-        if (getSz(curr -> l) <= index)
+        if (node::getSz(curr -> l) <= index)
         {
-            tie(curr -> r, res.second) = splitIndex(curr -> r, index - getSz(curr -> l) - 1);
+            tie(curr -> r, res.second) = splitIndex(curr -> r, index - node::getSz(curr -> l) - 1);
             res.first = curr -> refresh();
         }
         else
@@ -89,55 +81,39 @@ struct treap
     node* meld(node* &a, node* &b)
     {
         if (!a or !b) return a ? a : b;
-
         if (a -> priority >= b -> priority)
         {
             a -> r = meld(a -> r, b);
-            a -> refresh();
-            return a;
+            return a -> refresh();
         }
         else
         {
             b -> l = meld(a, b -> l);
-            b -> refresh();
-            return b;
+            return b -> refresh();
         }
     }
 
     void insert(int k)
     {
-        node *a, *b, *c, *nn = new node(k);
-        tie(a, b) = splitValue(root, k - 1);
-        tie(b, c) = splitValue(b, k);
-        root = meld(a, nn);
-        root = meld(root, c);
+        auto a = splitKey(root, k - 1), b = splitKey(a.second, k);
+        b.first = new node(k);
+        root = meld(a.first, root = meld(b.first, b.second));
     }
 
     void erase(int k)
     {
-        node *a, *b, *c;
-        tie(a, b) = splitValue(root, k - 1);
-        tie(b, c) = splitValue(b, k);
-        root = meld(a, c);
+        auto a = splitKey(root, k - 1), b = splitKey(a.second, k);
+        root = meld(a.first, b.second);
     }
 
     int query(int l, int r, int type)
     {
-        node *a, *b, *c;
-
         if (l == r) return -1;
-
-        tie(a, b) = splitIndex(root, l - 1);
-        tie(b, c) = splitIndex(b, r - l);
-
-        int res = !type ? (b -> maxElement - b -> minElement) : b -> minDifference;
-
-        root = meld(a, b);
-        root = meld(root, c);
+        auto a = splitIndex(root, l - 1), b = splitIndex(a.second, r - l);
+        int res = !type ? (b.first -> maxElement - b.first -> minElement) : b.first -> minDifference;
+        root = meld(a.first, root = meld(b.first, b.second));
         return res;
     }
-
-    int getSz(node* n) { return n ? n -> sz : 0; }
 };
 
 int main()
