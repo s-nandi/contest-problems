@@ -21,7 +21,6 @@ struct segmentTree
     {
         p += sz;
         elements[p] += v;
-
         while (p >= 2)
         {
             elements[p >> 1] = max(elements[p], elements[p ^ 1]);
@@ -53,7 +52,8 @@ struct segmentTree
     }
 };
 
-typedef vector <vector<int>> graph;
+struct edge{int to;};
+typedef vector <vector<edge>> graph;
 
 struct heavyLightDecomposition
 {
@@ -74,14 +74,14 @@ struct heavyLightDecomposition
     void reorder(int curr)
     {
         sizes[curr] = 1;
-        for (int &i: g[curr]) if (i != parent[curr])
+        for (edge &e: g[curr]) if (e.to != parent[curr])
         {
-            parent[i] = curr;
-            reorder(i);
-            sizes[curr] += sizes[i];
-            if (sizes[i] > sizes[g[curr][0]])
+            parent[e.to] = curr;
+            reorder(e.to);
+            sizes[curr] += sizes[e.to];
+            if(sizes[e.to] > sizes[g[curr][0].to])
             {
-                swap(i, g[curr][0]);
+                swap(e, g[curr][0]);
             }
         }
     }
@@ -89,10 +89,10 @@ struct heavyLightDecomposition
     void tour(int curr)
     {
         position[curr] = timer++;
-        for (int i: g[curr]) if (i != parent[curr])
+        for (edge e: g[curr]) if (e.to != parent[curr])
         {
-            root[i] = i == g[curr][0] ? root[curr] : i;
-            tour(i);
+            root[e.to] = e.to == g[curr][0].to ? root[curr] : e.to;
+            tour(e.to);
         }
     }
 
@@ -146,8 +146,8 @@ int main()
         int a, b;
         cin>>a>>b;
         --a; --b;
-        g[a].push_back(b);
-        g[b].push_back(a);
+        g[a].push_back({b});
+        g[b].push_back({a});
     }
     hld.build(g, 0);
 
