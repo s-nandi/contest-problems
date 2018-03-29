@@ -41,6 +41,23 @@ struct polarCmp
     }
 };
 
+int findBest(vector <pt> points, const pt &origin)
+{
+    int best = abs(origin.val);
+    polarCmp cmp(origin);
+    auto pivot = partition(points.begin(), points.end(), [&origin](const pt &p){return p.y == origin.y;});
+    for (pt &p: points) if (p.y != origin.y)
+    {
+        int sv = p.val;
+        if (p.y < origin.y) p = p.reflect(origin), p.val = -1 * sv;
+    }
+    sort(pivot, points.end(), cmp);
+    int cv = best;
+    for (pt &p: points) if (p.y != origin.y)
+        cv += p.val, best = max(best, cv);
+    return best;
+}
+
 int main()
 {
     ios::sync_with_stdio(false);
@@ -61,28 +78,8 @@ int main()
     }
 
     int maxVal = 0;
-    for (pt origin: points)
-    {
-        int currVal = abs(origin.val);
-        maxVal = max(maxVal, currVal);
-
-        vector <pt> reflected;
-        for (const pt &p: points) if (p.y != origin.y)
-        {
-            pt r = p;
-            if (p.y < origin.y) r = p.reflect(origin), r.val = -1 * p.val;
-            reflected.push_back(r);
-        }
-        polarCmp cmp(origin);
-        sort(reflected.begin(), reflected.end(), cmp);
-
-        for (pt p: reflected)
-        {
-            currVal += p.y > origin.y ? p.val : -p.val;
-            maxVal = max(maxVal, currVal);
-        }
-    }
-
+    for (pt origin: points) maxVal = max(maxVal, findBest(points, origin));
     cout<<maxVal<<'\n';
+
     return 0;
 }
