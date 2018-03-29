@@ -1,4 +1,4 @@
-//radial sweep
+//radial sweep (double ended)
 //https://icpc.kattis.com/problems/oil2 (2016 ICPC World Finals)
 
 #include <iostream>
@@ -9,99 +9,76 @@ using namespace std;
 
 #define ll long long
 
+typedef ll ptT;
 struct pt
 {
-    int x;
-    int y;
-};
-
-int orientation(pt a, pt b, pt c)
-{
-    ll val1 = (ll) (b.y - a.y) * (c.x - b.x);
-    ll val2 = (ll) (b.x - a.x) * (c.y - b.y);
-
-    if (val1 < val2)
-    {
-        return -1;
-    }
-    else if (val1 > val2)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-struct event
-{
-    pt p;
+    ptT x, y;
     int val;
 
-    bool operator < (event o) const
-    {
-        int orient = orientation({0, 0}, p, o.p);
-        if (orient == 0)
-        {
-            return val > o.val;
-        }
-        return orient == 1;
-    }
+    pt operator + (const pt &o) const {return {x + o.x, y + o.y};}
+    pt operator - (const pt &o) const {return {x - o.x, y - o.y};}
+
+    ptT operator ^ (const pt &o) const {return x * o.y - y * o.x;}
+
+    pt reflect(const pt &o) const {return o + o - *this;}
 };
 
+int orientation(const pt &o, const pt &a, const pt &b)
+{
+    auto cp = (b - o) ^ (a - o);
+    return cp > 0 ? 1 : (cp < 0 ? -1 : 0);
+}
+
+struct polarCmp
+{
+    const pt o;
+
+    polarCmp(const pt &origin) : o(origin) {}
+    bool operator () (const pt &a, const pt &b) const
+    {
+        int orient = orientation(o, a, b);
+        return orient == 1 or (orient == 0 and a.val > b.val);
+    }
+};
 
 int main()
 {
-    ios::sync_with_stdio(false); cin.tie(NULL);
-    int n;
+    ios::sync_with_stdio(false);
+    cin.tie(NULL);
 
+    int n;
     cin>>n;
 
-    vector <event> pts(2*n);
-
-    int x0, x1, y, f, s;
-    for (int i = 0; i < 2*n; i+=2)
+    vector <pt> points(2 * n);
+    for (int i = 0; i < 2 * n; i += 2)
     {
-        cin>>f>>s>>y;
-        x0 = min(f, s);
-        x1 = max(f, s);
-        pts[i] = {{x0, y}, x1 - x0};
-        pts[i + 1] = {{x1, y}, x0 - x1};
+        int x0, x1, y;
+        cin>>x0>>x1>>y;
+        if (x0 == x1) continue;
+        if (x0 > x1) swap(x0, x1);
+        points[i] = {x0, y, x1 - x0};
+        points[i + 1] = {x1, y, x0 - x1};
     }
 
     int maxVal = 0;
-
-    for (int i = 0; i < 2 * n; i++)
+    for (pt origin: points)
     {
-        pt origin = pts[i].p;
-        int currVal = abs(pts[i].val);
+        int currVal = abs(origin.val);
         maxVal = max(maxVal, currVal);
 
-        vector <event> validPoints;
-
-        for (int j = 0; j < 2 * n; j++)
+        vector <pt> reflected;
+        for (const pt &p: points) if (p.y != origin.y)
         {
-            pt candidate = pts[j].p;
-
-            if (candidate.y > origin.y)
-            {
-                validPoints.push_back({{candidate.x - origin.x, candidate.y - origin.y}, pts[j].val});
-            }
-            else if (candidate.y < origin.y) //reflect across origin
-            {
-                validPoints.push_back({{-(candidate.x - origin.x), -(candidate.y - origin.y)}, -pts[j].val});
-            }
+            pt r = p;
+            if (p.y < origin.y) r = p.reflect(origin), r.val = -1 * p.val;
+            reflected.push_back(r);
         }
+        polarCmp cmp(origin);
+        sort(reflected.begin(), reflected.end(), cmp);
 
-        pt pto = {0, 0};
-
-        sort(validPoints.begin(), validPoints.end());
-
-
-        for (int j = 0; j < validPoints.size(); j++)
+        for (pt p: reflected)
         {
-            currVal += validPoints[j].val;
+            currVal += p.y > origin.y ? p.val : -p.val;
             maxVal = max(maxVal, currVal);
         }
     }
