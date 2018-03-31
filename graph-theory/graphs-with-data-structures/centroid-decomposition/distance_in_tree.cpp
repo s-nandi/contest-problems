@@ -19,13 +19,13 @@ struct centroidDecomposition
     graph g;
     vector <int> sizes, blocked;
 
-    int k; ll sol;
+    int k; ll sol = 0;
     int reachable[MAXK + 1];
 
     centroidDecomposition(graph &gr, int _k)
     {
         g = gr;
-        sz = g.size(), k = _k, sol = 0;
+        sz = g.size(), k = _k;
         sizes.resize(sz), blocked.resize(sz);
         decompose(0);
     }
@@ -54,18 +54,14 @@ struct centroidDecomposition
 
     int findCentroid(int total, int curr, int prev = -1)
     {
-        while (prev != curr)
+        for (int old; prev != curr; prev = old)
         {
-            int temp = curr;
-            for (int neighbor: g[curr]) if (neighbor != prev and !blocked[neighbor])
+            old = curr;
+            for (int neighbor: g[curr]) if (neighbor != prev and !blocked[neighbor] and sizes[neighbor] > total / 2)
             {
-                if (sizes[neighbor] > total / 2)
-                {
-                    curr = neighbor;
-                    break;
-                }
+                curr = neighbor;
+                break;
             }
-            prev = temp;
         }
         return curr;
     }
