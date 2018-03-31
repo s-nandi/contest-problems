@@ -16,13 +16,13 @@ struct dsuOnTree
 {
     int sz, timer = 0;
     graph g;
-    vector <int> st, ft, ordered, sizes, heavy;
+    vector <int> st, ft, ordered, sizes;
     int maxCount = 0; ll sumCount = 0; vector <int> counts; vector <ll> sols;
 
     dsuOnTree(graph &gr)
     {
         g = gr, sz = g.size();
-        st.resize(sz), ft.resize(sz), ordered.resize(sz), sizes.resize(sz), heavy.resize(sz, -1);
+        st.resize(sz), ft.resize(sz), ordered.resize(sz), sizes.resize(sz);
         sols.resize(sz), counts.resize(sz + 1);
         tour(), dfs();
     }
@@ -32,11 +32,7 @@ struct dsuOnTree
         sizes[curr] = 1;
         ordered[timer] = curr, st[curr] = timer++;
         for (edge e: g[curr]) if (e.to != prev)
-        {
             sizes[curr] += tour(e.to, curr);
-            if (heavy[curr] == -1 or sizes[e.to] > sizes[heavy[curr]])
-                heavy[curr] = e.to;
-        }
         ft[curr] = timer;
         return sizes[curr];
     }
@@ -53,13 +49,16 @@ struct dsuOnTree
     void dfs(int curr = 0, int prev = -1, bool keep = false)
     {
         int oldCount = maxCount; ll oldSum = sumCount;
-        for (edge e: g[curr]) if (e.to != prev and e.to != heavy[curr])
+        int heavy = -1, mx = -1;
+        for (edge e: g[curr]) if (e.to != prev and sizes[e.to] > mx)
+            mx = sizes[e.to], heavy = e.to;
+        for (edge e: g[curr]) if (e.to != prev and e.to != heavy)
             dfs(e.to, curr);
-        if (heavy[curr] != -1)
-            dfs(heavy[curr], curr, true);
-        for (edge e: g[curr]) if (e.to != prev and e.to != heavy[curr])
+        if (heavy != -1)
+            dfs(heavy, curr, true);
+        for (edge e: g[curr]) if (e.to != prev and e.to != heavy)
             for (int t = st[e.to]; t < ft[e.to]; t++)
-                {add(ordered[t]);}
+                add(ordered[t]);
         add(curr);
         sols[curr] = sumCount;
         if (!keep)
