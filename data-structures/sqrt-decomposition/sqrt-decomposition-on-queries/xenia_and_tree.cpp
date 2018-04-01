@@ -1,4 +1,4 @@
-//sqrt decomposition on queries (delaying updates), binary lifting for lowest common ancestor, bfs
+//sqrt decomposition on queries (delaying updates), binary lifting (lca), bfs
 //http://codeforces.com/contest/342/problem/E
 
 #include <iostream>
@@ -12,7 +12,7 @@ using namespace std;
 vector <vector<int>> graph;
 vector <int> delayed, distances;
 
-const int bucket_size = 79; //queries are significantly more expensive
+const int bucket = 79; //queries are significantly more expensive
 
 int ln = 0;
 vector <vector<int>> binaryLift;
@@ -45,7 +45,6 @@ int lowestCommonAncestor(int l, int r)
         }
     }
     if (l == r) return l;
-
     for (int i = ln - 1; i >= 0; i--)
     {
         if (binaryLift[l][i] != binaryLift[r][i])
@@ -122,10 +121,7 @@ int main()
         if (type == 1)
         {
             delayed.push_back(v);
-            if (delayed.size() == bucket_size)
-            {
-                update();
-            }
+            if (delayed.size() == bucket) update();
         }
         else
         {
