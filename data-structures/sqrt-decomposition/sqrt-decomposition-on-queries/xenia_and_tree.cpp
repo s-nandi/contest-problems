@@ -12,7 +12,7 @@ using namespace std;
 vector <vector<int>> graph;
 vector <int> delayed, distances;
 
-const int bucket = 79; //queries are significantly more expensive
+const int bucketSize = 79; //queries are significantly more expensive
 
 int ln = 0;
 vector <vector<int>> binaryLift;
@@ -121,7 +121,7 @@ int main()
         if (type == 1)
         {
             delayed.push_back(v);
-            if (delayed.size() == bucket) update();
+            if (delayed.size() == bucketSize) update();
         }
         else
         {
