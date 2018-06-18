@@ -1,3 +1,6 @@
+//implicit graph construction
+//http://codeforces.com/contest/994/problem/D
+
 #include <iostream>
 #include <vector>
 #include <set>
