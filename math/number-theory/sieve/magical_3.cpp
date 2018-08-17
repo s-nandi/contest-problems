@@ -1,6 +1,6 @@
 // factorization, finding smallest factor of number greater than 3 (numbers are > 10^9)
 // https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&category=&problem=5403&mosmsg=Submission+received+with+ID+2430741
-// 2015 Pacific Northwest Regional
+// 2015 Southeast USA Regional
 
 #include <bits/stdc++.h>
 
