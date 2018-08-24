@@ -50,27 +50,27 @@ struct fraction
 
     long double eval() const {return (long double) num / denom;}
 
-    pair <fraction, fraction> common(const fraction &o) const // Warning!! Careful of overflow from lcm of denominators (denominators should not be > 10^9 to be safe)
+    pair <fraction, fraction> common(const fraction &o) const
     {
         fracT l = lcm(denom, o.denom);
         return {{l / denom * num, l, false}, {l / o.denom * o.num, l, false}};
     }
 
-    bool operator < (const fraction &o) const // Warning!! Same as above
+    bool operator < (const fraction &o) const
     {
         fraction a, b;
         tie(a, b) = common(o);
         return a.num < b.num;
     }
 
-    fraction operator - (const fraction &o) // Warning!! Same as above
+    fraction operator - (const fraction &o) const
     {
         fraction a, b;
         tie(a, b) = common(o);
         return {a.num - b.num, a.denom};
     }
 
-    fraction operator + (const fraction &o) // Warning!! Same as above
+    fraction operator + (const fraction &o) const
     {
         fraction a, b;
         tie(a, b) = common(o);
