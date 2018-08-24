@@ -6,7 +6,9 @@
 
 using namespace std;
 
-int gcd(int a, int b)
+typedef long long fracT;
+
+fracT gcd(fracT a, fracT b)
 {
     while (b != 0)
         tie(a, b) = make_tuple(b, a % b);
@@ -15,24 +17,24 @@ int gcd(int a, int b)
 
 struct fraction
 {
-    int num, denom;
+    fracT num = 0, denom = 1;
 
     fraction(){}
-    fraction(int a, int b)
+    fraction(fracT a, fracT b, bool simplify = true)
     {
-        int g = gcd(a, b);
+        if (a < 0)
+            a = -a, b = -b;
+        fracT g = simplify ? gcd(abs(a), abs(b)) : 1;
         num = a / g, denom = b / g;
-        if (num < 0)
-            num = -num, denom = -denom;
     }
 };
 
-fraction reciprocal(const fraction &a)
+fraction reciprocal(const fraction &f)
 {
-    return {a.denom, a.num};
+    return {f.denom, f.num};
 }
 
-fraction multiply(const fraction &a, const fraction &b)
+fraction operator * (const fraction &a, const fraction &b)
 {
     return {a.num * b.num, a.denom * b.denom};
 }
@@ -66,7 +68,7 @@ bool dfs(graph &g, int curr, bool color, const fraction &ratio_to_source)
 
     for (edge e: g[curr])
     {
-        bool viable = dfs(g, e.to, 1 - color, multiply(ratio_to_source, e.radius_ratio));
+        bool viable = dfs(g, e.to, 1 - color, ratio_to_source * e.radius_ratio);
         if (!viable)
             return false;
     }
