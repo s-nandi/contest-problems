@@ -1,4 +1,4 @@
-//detecting and finding euler tour
+//detecting directed euler tour, implicit graph
 //http://www.spoj.com/problems/WORDS1/
 
 #include <iostream>
@@ -21,8 +21,7 @@ struct eulerTour
     eulerTour(graph &gr)
     {
         g = gr, n = g.size();
-        if (!feasible()) isFeasible = false;
-        else
+        if(isFeasible = feasible())
         {
             getEdge(), used.resize(m);
             dfs(root), isFeasible = tour.size() == m + 1;
@@ -31,35 +30,36 @@ struct eulerTour
 
     void getEdge()
     {
-        for (int i = 0; i < n; i++) m += g[i].size();
+        for (int i = 0; i < n; i++)
+            m += g[i].size();
     }
 
     bool feasible()
     {
-        vector <int> inDegree(n), outDegree(n);
+        vector <int> in(n), out(n);
         for (int i = 0; i < n; i++) for (edge e: g[i])
-        {
-            inDegree[e.to]++, outDegree[i]++;
-        }
-        int numLess = 0, numGreater = 0;
+            in[e.to]++, out[i]++;
+        int neg = 0, pos = 0;
         for (int i = 0; i < n; i++)
         {
-            if (!inDegree[i] and !outDegree[i]) continue;
+            if (!in[i] and !out[i]) continue;
 
-            int diff = inDegree[i] - outDegree[i];
-            if (diff > 1 or diff < -1) return false;
-            if (diff < 0)
+            int d = in[i] - out[i];
+            if (abs(d) > 1) return false;
+            if (d < 0)
             {
-                if (++numLess > 1) return false;
+                if (++neg > 1)
+                    return false;
                 root = i;
             }
-            else if (diff > 0)
+            if (d > 0)
             {
-                if (++numGreater > 1) return false;
+                if (++pos > 1)
+                    return false;
             }
-            else if(root == -1) root = i;
+            if(root == -1) root = i;
         }
-        return numLess == numGreater;
+        return neg == pos;
     }
 
     void dfs(int curr)
@@ -75,12 +75,11 @@ struct eulerTour
 
 int main()
 {
-    ios::sync_with_stdio(0);
+    ios::sync_with_stdio(false);
     cin.tie(0);
 
     int T;
     cin>>T;
-
     while(T--)
     {
         int n;
@@ -95,10 +94,8 @@ int main()
             int in = s[0] - 'a', out = s[s.length() - 1] - 'a';
             g[in].push_back({out, i});
         }
-
-        auto etour = eulerTour(g);
-
-        if (etour.isFeasible) cout<<"Ordering is possible."<<'\n';
+        eulerTour eu(g);
+        if (eu.isFeasible) cout<<"Ordering is possible."<<'\n';
         else cout<<"The door cannot be opened."<<'\n';
     }
 
