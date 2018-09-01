@@ -1,5 +1,6 @@
-//tour ordering, dynamic programming (on trees - skipping subtrees, space saving, forward propagating)
-//https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=3788
+// tour ordering, dynamic programming (on trees - skipping subtrees, space saving, forward propagating)
+// https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=3788
+// 2011 Southeast USA Regional
 
 #include <iostream>
 #include <vector>
