@@ -1,4 +1,4 @@
-//dynamic programming (bitmask)
+//dynamic programming (TSP style)
 //https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&page=show_problem&problem=5374
 //2015 Mid-Central Regional
 
