@@ -1,5 +1,6 @@
-//dynamic programming, maximum subarray sum
-//https://open.kattis.com/problems/purplerain (2017 Mid-Atlantic Regional)
+// dynamic programming, maximum subarray sum
+// https://open.kattis.com/problems/purplerain
+// 2017 Mid Atlantic Regional
 
 #include <iostream>
 #include <vector>
