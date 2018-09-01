@@ -1,5 +1,5 @@
-//travelling salesman problem
-//https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=1437
+// travelling salesman problem
+// https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=1437
 
 #include <iostream>
 #include <vector>
@@ -7,9 +7,7 @@
 
 using namespace std;
 
-#define INF 1031231234
-
-int absval(int i) {return i > 0 ? i : -i;}
+const int INF = 1031231234;
 
 struct position
 {
