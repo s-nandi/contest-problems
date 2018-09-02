@@ -1,3 +1,6 @@
+// Dijkstra w/ modification (consecutive edges must have distinct colors)
+// http://codeforces.com/problemset/gymProblem/100570/B
+
 #include <iostream>
 #include <vector>
 #include <queue>
