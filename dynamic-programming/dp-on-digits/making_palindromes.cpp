@@ -29,25 +29,19 @@ int main()
     memset(dp, 0, sizeof(dp));
     dp[0][0][0] = 1;
 
-    for (int i = 0; i <= n; i++)
+    for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j <= n; j++)
+        for (int j = 0; j <= i; j++)
         {
-            for (int k = 0; k <= n; k++)
+            for (int k = 0; k <= i; k++)
             {
                 for (unsigned char c = 'A'; c <= 'Z'; c++)
                 {
-                    bool fr = j < n and c == s[j];
-                    bool bk = n - 1 - k >= 0 and c == s[n - 1 - k];
+                    bool matchFront = c == s[j];
+                    bool matchBack = c == s[n - 1 - k];
 
-                    if (fr and bk)
-                        dp[i + 1][j + 1][k + 1] = (dp[i + 1][j + 1][k + 1] + dp[i][j][k]) % MOD;
-                    else if (fr)
-                        dp[i + 1][j + 1][k] = (dp[i + 1][j + 1][k] + dp[i][j][k]) % MOD;
-                    else if (bk)
-                        dp[i + 1][j][k + 1] = (dp[i + 1][j][k + 1] + dp[i][j][k]) % MOD;
-                    else
-                        dp[i + 1][j][k] = (dp[i + 1][j][k] + dp[i][j][k]) % MOD;
+                    dp[i + 1][j + matchFront][k + matchBack] += dp[i][j][k];
+                    dp[i + 1][j + matchFront][k + matchBack] %= MOD;
                 }
             }
         }
