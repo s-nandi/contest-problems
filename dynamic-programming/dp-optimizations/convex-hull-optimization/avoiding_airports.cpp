@@ -27,7 +27,7 @@ struct equation
     }
 };
 
-struct cht
+struct convex_function_hull
 {
     vector <equation> hull;
 
@@ -82,7 +82,7 @@ int main()
     }
     sort(edges.begin(), edges.end());
 
-    vector <cht> hulls(n);
+    vector <convex_function_hull> hulls(n);
     hulls[0].hull.push_back({0, 0});
 
     ll sol = INF;
