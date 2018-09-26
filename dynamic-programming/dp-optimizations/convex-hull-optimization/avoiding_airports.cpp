@@ -1,100 +1,70 @@
-//dynamic programming, convex hull trick (online)
-//https://open.kattis.com/problems/avoidingairports (2017 Mid-Atlantic Regional)
+// dynamic programming, convex hull trick (online, parabolic function of distance from start)
+// https://open.kattis.com/problems/avoidingairports
+// 2017 Mid-Atlantic Regional
 
-#include <vector>
-#include <iostream>
-#include <algorithm>
-#include <cstdio>
+#include <bits/stdc++.h>
 
 using namespace std;
 
-#define ll long long
-#define INF 123123123121231
+typedef long long ll;
 
-struct node
+const ll INF = 1231231231231234;
+
+struct equation
 {
-    int endTime;
-    ll cost;
+    ll m, b; // y = (x - m) ^ 2 + b
 
-    ll value(int startTime)
+    ll y(ll x0)
     {
-        ll diff = startTime - endTime;
-        return diff * diff + cost;
+        ll dx = x0 - m;
+        return dx * dx + b;
     }
 
-    double overtake(node b)
+    double intersect(const equation &o) const
     {
-        double quotient1 = float(b.cost - cost) / (b.endTime - endTime);
-        return (quotient1 + b.endTime + endTime)/2.0;
+        double q = double (o.b - b) / (o.m - m);
+        return (q + o.m + m) / 2.0;
     }
 };
 
 struct cht
 {
-    vector <node> hull;
+    vector <equation> hull;
 
-    ll bestCost(int time)
+    ll getMinAfter(ll x0)
     {
-        if (hull.size() == 0)
-        {
+        equation e = {x0, 0};
+        int max_valid = upper_bound(hull.begin(), hull.end(), e, [](equation a, equation b){return a.m < b.m;}) - hull.begin() - 1;
+
+        if (max_valid == -1)
             return INF;
-        }
 
-        node temp = {time, 0};
-        int maxv = upper_bound(hull.begin(), hull.end(), temp, [](node a, node b){return a.endTime < b.endTime;}) - hull.begin();
-
-        if (maxv == 0)
+        int l = 0, r = max_valid;
+        while (l < r)
         {
-            return INF;
-        }
-
-        maxv--;
-
-        ll left = 1;
-        ll right = maxv;
-
-        while (left < right)
-        {
-            ll mid = (left + right) / 2;
-            if (hull[mid - 1].overtake(hull[mid]) >= time)
-            {
-                right = mid;
-            }
+            int m = (l + r) / 2;
+            if (hull[m].intersect(hull[m + 1]) >= x0)
+                r = m;
             else
-            {
-                left = mid + 1;
-            }
+                l = m + 1;
         }
-
-        if (hull[left - 1].overtake(hull[left]) < time)
-        {
-            return hull[maxv].value(time);
-        }
-        else
-        {
-            return hull[left - 1].value(time);
-        }
+        return hull[l].y(x0);
     }
 
-    void addNode(node newNode)
+    void addEquation(const equation &e)
     {
-        while (hull.size() >= 2 and hull[hull.size() - 2].overtake(newNode) < hull[hull.size() - 2].overtake(hull[hull.size() - 1]))
-        {
+        while (hull.size() >= 2 and hull[hull.size() - 2].intersect(e) < hull[hull.size() - 2].intersect(hull[hull.size() - 1]))
             hull.pop_back();
-        }
-        hull.push_back(newNode);
+        hull.push_back(e);
     }
 };
 
 struct edge
 {
-    int a;
-    int b;
-    int s;
-    int e;
-    bool operator < (edge b) const
+    int from, to, startTime, endTime;
+    bool operator < (const edge &o) const
     {
-        return e < b.e;
+        return endTime < o.endTime;
     }
 };
 
@@ -110,41 +80,21 @@ int main()
         --a; --b;
         edges.push_back({a, b, s, e});
     }
-
     sort(edges.begin(), edges.end());
 
     vector <cht> hulls(n);
     hulls[0].hull.push_back({0, 0});
 
-    ll sol = -1;
-
-    if (n == 1)
+    ll sol = INF;
+    for (edge e: edges)
     {
-        cout<<0<<'\n';
+        ll minCost = hulls[e.from].getMinAfter(e.startTime);
+        hulls[e.to].addEquation({e.endTime, minCost});
+
+        if (e.to == n - 1)
+            sol = min(sol, minCost);
     }
-    else
-    {
-        for (edge e: edges)
-        {
-            int from = e.a;
-            int to = e.b;
-            int startTime = e.s;
-            int endTime = e.e;
-
-            ll minCost = hulls[from].bestCost(startTime);
-            hulls[to].addNode({endTime, minCost});
-
-            if (to == n - 1)
-            {
-                if (sol == -1 or minCost < sol)
-                {
-                    sol = minCost;
-                }
-            }
-        }
-
-        cout<<sol<<'\n';
-    }
+    cout<<sol<<'\n';
 
     return 0;
 }
