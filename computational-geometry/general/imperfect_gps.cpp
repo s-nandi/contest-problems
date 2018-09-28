@@ -1,4 +1,3 @@
-
 // simulation, point interpolation (vector geometry)
 // https://open.kattis.com/problems/imperfectgps
 // 2017 North American Qualifier
