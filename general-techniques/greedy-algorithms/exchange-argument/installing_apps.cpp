@@ -1,4 +1,4 @@
-// greedy (exchange argument), dp (knapsack after using comparator)
+// greedy (exchange argument), dp (knapsack after using comparator, reconstructing solution)
 // http://codeforces.com/gym/101623 (problem I)
 // 2017 Northwest European Regional
 
