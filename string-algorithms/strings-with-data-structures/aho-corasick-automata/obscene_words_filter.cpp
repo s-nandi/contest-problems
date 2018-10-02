@@ -1,98 +1,87 @@
-//aho corasick (map, pattern partition)
+//aho corasick (find first match - can't just pick earliest state, length matters), bucketing to reduce memory usage
 //http://acm.timus.ru/problem.aspx?space=1&num=1269
 
-#include <iostream>
-#include <vector>
-#include <map>
-#include <queue>
+#include <bits/stdc++.h>
 
 using namespace std;
 
 const int INF = 1231231234;
-const int MAXN = 100001;
 
 struct node
 {
-    map <int, int> to;
-    int prefixLink = -1, matchLink = -1, len = 0;
-    bool isEnd = false;
+    map <int, int> next;
+    int terminalIdx = -1, prefixLink = -1, matchLink = -1;
+    int par, pch, len, longestMatch = -1;
+
+    node(int p = -1, int ch = '$', int l = 0) : par(p), pch(ch), len(l) {}
 };
 
 struct ahoCorasick
 {
-    int numNodes;
+    int sz;
     vector <node> elements;
 
-    ahoCorasick()
-    {
-        numNodes = 1;
-        elements.resize(MAXN);
-    }
+    ahoCorasick(){sz = 1, elements.resize(1);}
 
-    int mapping(char c){return c + 128;}
+    int mapping(unsigned char c){return c;}
+    int next(int v, int t){return elements[v].next.count(t) ? elements[v].next[t] : -1;}
 
-    void addWord(string &s)
+    void addWord(string const &s, int idx = -2)
     {
-        int curr = 0;
-        for (char c: s)
+        int v = 0;
+        for (char ch : s)
         {
-            int mc = mapping(c);
-            if (next(curr, mc) == -1)
+            int c = mapping(ch);
+            if (next(v, c) == -1)
             {
-                elements[curr].to[mc] = numNodes++;
-                elements[next(curr, mc)].len = elements[curr].len + 1;
+                elements[v].next[c] = sz++;
+                elements.emplace_back(v, c, elements[v].len + 1);
             }
-            curr = next(curr, mc);
+            v = next(v, c);
         }
-        elements[curr].isEnd = true;
+        elements[v].terminalIdx = idx;
     }
 
-    int next(int i, int t){return elements[i].to.count(t) ? elements[i].to[t] : -1;}
-
-    void build()
+    int getLink(int v)
     {
-        elements[0].prefixLink = 0;
-        buildLinks();
-    }
-
-    void buildLinks()
-    {
-        queue <int> q;
-        q.push(0);
-
-        while (!q.empty())
+        if (elements[v].prefixLink == -1)
         {
-            int curr = q.front();
-            q.pop();
+            elements[v].prefixLink = elements[v].par <= 0 ? 0 : nextState(getLink(elements[v].par), elements[v].pch);
+            getLink(elements[v].prefixLink);
 
-            int j = elements[curr].prefixLink;
-            elements[curr].matchLink = elements[j].isEnd ? j : elements[j].matchLink;
-            for (auto &elem: elements[curr].to)
-            {
-                int mc = elem.first;
-
-                while (j > 0 and next(j, mc) == -1) j = elements[j].prefixLink;
-                if (curr != 0 and next(j, mc) != -1) elements[next(curr, mc)].prefixLink = next(j, mc);
-                else elements[next(curr, mc)].prefixLink = 0;
-
-                q.push(next(curr, mc));
-            }
+            int link = elements[v].prefixLink;
+            elements[v].matchLink = (elements[link].terminalIdx != -1) ? link: elements[link].matchLink;
         }
+        return elements[v].prefixLink;
     }
 
-    int findFirstMatch(string &s)
+    int nextState(int v, int c)
+    {
+        if (next(v, c) != -1)
+            return next(v, c);
+        else
+            return v == 0 ? 0 : nextState(getLink(v), c);
+    }
+
+    int findLongestMatch(int v)
+    {
+        if (elements[v].longestMatch == -1)
+        {
+            getLink(v);
+            elements[v].longestMatch = elements[v].terminalIdx != -1 ? elements[v].len : 0;
+            elements[v].longestMatch = max(elements[v].longestMatch, elements[v].matchLink != -1 ? findLongestMatch(elements[v].matchLink) : 0);
+        }
+        return elements[v].longestMatch;
+    }
+
+    int findFirstMatch(const string &s)
     {
         int res = INF;
-        for (int i = 0, j = 0; i < s.length(); i++)
+        for (int i = 0, state = 0; i < s.length(); i++)
         {
-            int mc = mapping(s[i]);
-
-            while (j > 0 and next(j, mc) == -1) j = elements[j].prefixLink;
-            if (next(j, mc) != -1) j = next(j, mc);
-            else j = 0;
-
-            for (int k = j; k != -1; k = elements[k].matchLink) if (elements[k].isEnd)
-                res = min(res, i - elements[k].len + 1);
+            state = nextState(state, mapping(s[i]));
+            if (findLongestMatch(state) != 0)
+                res = min(res, i - findLongestMatch(state) + 1);
         }
         return res;
     }
@@ -107,7 +96,7 @@ int main()
     cin>>n;
     cin.ignore();
 
-    string s[n];
+    vector <string> s(n);
     for (int i = 0; i < n; i++)
     {
         getline(cin, s[i]);
@@ -120,15 +109,16 @@ int main()
     vector <string> lines(m);
     for (int i = 0; i < m; i++) getline(cin, lines[i]);
 
-    vector <pair <int, int>> sol(2, {INF, INF});
-    for (int t = 0; t < 2; t++)
+    int buckets = 2;
+    pair <int, int> best = {INF, INF};
+    vector <pair <int, int>> sol(buckets, {INF, INF});
+    for (int t = 0; t < buckets; t++)
     {
         ahoCorasick ac;
 
-        if (!t) for (int i = 0; i < n; i += 2) ac.addWord(s[i]);
-        else for (int i = 1; i < n; i += 2) ac.addWord(s[i]);
+        for (int i = t; i < n; i += buckets)
+            ac.addWord(s[i]);
 
-        ac.build();
         for (int i = 0; i < m; i++)
         {
             int res = ac.findFirstMatch(lines[i]);
@@ -138,11 +128,9 @@ int main()
                 break;
             }
         }
+        best = min(best, sol[t]);
     }
-    auto best = min(sol[0], sol[1]);
 
     if (best.first != INF) cout<<best.first<<" "<<best.second<<'\n';
     else cout<<"Passed"<<'\n';
-
-    return 0;
 }
