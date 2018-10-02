@@ -16,10 +16,10 @@ struct node
     map <int, int> next;
     array <int, alpha> go;
     int terminalIdx = -1; // terminalIdx = -1 denotes non-end-of-word nodes. if != -1, stores the index of the string ending at this node
-    int prefixLink = -1, matchLink = -1;
-    int par; char pch;
+    int prefixLink = -1, matchLink = -1, isEnd = -1;
+    int par, pch;
 
-    node(int p = -1, char ch = '$') : par(p), pch(ch) {fill(go.begin(), go.end(), -1);}
+    node(int p = -1, int ch = -1) : par(p), pch(ch) {fill(go.begin(), go.end(), -1);}
 };
 
 struct ahoCorasick
@@ -42,7 +42,7 @@ struct ahoCorasick
             if (next(v, c) == -1)
             {
                 elements[v].next[c] = sz++;
-                elements.emplace_back(v, ch);
+                elements.emplace_back(v, c);
             }
             v = next(v, c);
         }
@@ -74,12 +74,14 @@ struct ahoCorasick
         return go(v, c);
     }
 
-    bool isTerminal(int v)
+    int isTerminal(int v)
     {
-        for (; v != -1; v = elements[v].matchLink)
-            if (elements[v].terminalIdx != -1)
-                return true;
-        return false;
+        if (elements[v].isEnd == -1)
+        {
+            getLink(v);
+            elements[v].isEnd = elements[v].terminalIdx != -1 or (elements[v].matchLink != -1 and isTerminal(elements[v].matchLink));
+        }
+        return elements[v].isEnd;
     }
 };
 
