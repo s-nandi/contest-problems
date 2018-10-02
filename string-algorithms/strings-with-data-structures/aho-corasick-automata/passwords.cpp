@@ -13,10 +13,9 @@ const int MOD = 1000003;
 const int alpha = 256;
 struct node
 {
-    map <int, int> next;
+    map <int, int> next; // PS: next/go can be any combination of map/array
     array <int, alpha> go;
-    int terminalIdx = -1; // terminalIdx = -1 denotes non-end-of-word nodes. if != -1, stores the index of the string ending at this node
-    int prefixLink = -1, matchLink = -1, isEnd = -1;
+    int terminalIdx = -1, prefixLink = -1, matchLink = -1; // iff terminalIdx != -1, it denotes the index of the string ending at this node
     int par, pch;
 
     node(int p = -1, int ch = -1) : par(p), pch(ch) {fill(go.begin(), go.end(), -1);}
@@ -74,14 +73,10 @@ struct ahoCorasick
         return go(v, c);
     }
 
-    int isTerminal(int v)
+    bool isTerminal(int v)
     {
-        if (elements[v].isEnd == -1)
-        {
-            getLink(v);
-            elements[v].isEnd = elements[v].terminalIdx != -1 or (elements[v].matchLink != -1 and isTerminal(elements[v].matchLink));
-        }
-        return elements[v].isEnd;
+        getLink(v);
+        return elements[v].terminalIdx != -1 or (elements[v].matchLink != -1 and isTerminal(elements[v].matchLink));
     }
 };
 
