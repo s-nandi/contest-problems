@@ -30,6 +30,4 @@ int main()
         sol += max(left[i], right[i]);
     }
     cout << sol + n << '\n';
-
-    return 0;
 }
