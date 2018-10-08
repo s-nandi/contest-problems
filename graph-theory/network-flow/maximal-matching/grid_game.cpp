@@ -1,4 +1,4 @@
-// network flow (# of vertex disjoint paths on bipartite graph), blocked n-rooks problem, binary search
+// network flow (maximal matching on bipartite graph), blocked n-rooks problem, binary search
 // https://open.kattis.com/problems/gridgame
 // 2018 Singapore Preliminary
 
