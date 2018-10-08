@@ -1,4 +1,4 @@
-// network flow (ford-fulkerson)
+// network flow (ford-fulkerson, finding optimal matching)
 // https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=6005
 // 2016 East Central Regional
 
