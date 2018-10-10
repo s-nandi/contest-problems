@@ -1,81 +1,60 @@
-//combinatorics (combinations with repeated elements), permutation generator
+//combinatorics (combinations with repeated elements), combinations generator
 //http://codeforces.com/contest/991/problem/E
 
-#include <iostream>
-#include <vector>
-#include <algorithm>
+#include <bits/stdc++.h>
 
 using namespace std;
 
 typedef long long ll;
 
-vector <ll> fac;
-vector <int> validpos;
+const int MAXD = 19;
 
-void getFactorial(int to)
+vector <ll> factorial;
+void precompute(int n)
 {
-    fac.resize(to + 1);
-    fac[0] = 1LL;
-    for (int i = 1; i <= to; i++)
-    {
-        fac[i] = fac[i - 1] * (ll) i;
-    }
+    factorial.resize(n + 1);
+    factorial[0] = 1;
+    for (int i = 1; i <= n; i++)
+        factorial[i] = factorial[i - 1] * i;
 }
 
-bool getNext(vector <int> &curr, vector <int> &lim, int &pos)
+map <int, int> original;
+ll numArrangements(map <int, int> &digits, bool checkLeading = true)
 {
-    if (curr[pos] < lim[pos])
-    {
-        curr[pos]++;
-    }
-    else if(pos == validpos.back())
-    {
-        return false;
-    }
-    else
-    {
-        auto nextit = upper_bound(validpos.begin(), validpos.end(), pos);
-        if (nextit == validpos.end()) return false;
+    if (digits.size() < original.size())
+        return 0;
 
-        int nextpos = *nextit;
-        for (int p: validpos)
-        {
-            if (p >= nextpos) break;
-            curr[p] = 1;
-        }
-        if (curr[nextpos] < lim[nextpos])
-        {
-            curr[nextpos]++;
-            pos = validpos[0];
-        }
-        else
-        {
-            pos = nextpos;
-            return getNext(curr, lim, pos);
-        }
-    }
-
-    return true;
-}
-
-ll solve(vector <int> &curr, vector <int> &lim, bool checkleading = true)
-{
-    ll leadingzero = 0;
-    if (checkleading and curr[0] > 0)
+    int dig = 0;
+    ll denom = 1;
+    for (auto elem: digits)
     {
-        vector <int> without(curr);
-        without[0]--;
-        leadingzero = solve(without, lim, false);
+        dig += elem.second;
+        denom *= factorial[elem.second];
     }
-    int total = 0;
-    ll denom = 1LL;
-    for (int i = 0; i < curr.size(); i++)
+    auto res = factorial[dig] / denom;
+    if (checkLeading and digits.count(0))
     {
-        total += curr[i];
-        denom *= fac[curr[i]];
+        digits[0]--;
+        res -= numArrangements(digits, false);
+        digits[0]++;
     }
-    ll res = fac[total] / denom - leadingzero;
     return res;
+}
+
+ll combinations(map <int, int> &digits, int prev = -1)
+{
+    ll acc = numArrangements(digits);
+    for (auto &elem: original)
+    {
+        digits[elem.first]++;
+
+        if (digits[elem.first] <= elem.second and elem.first >= prev)
+            acc += combinations(digits, elem.first);
+
+        if (--digits[elem.first] == 0)
+            digits.erase(elem.first);
+    }
+    return acc;
 }
 
 int main()
@@ -83,39 +62,14 @@ int main()
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    getFactorial(19);
-    string n;
-    cin>>n;
+    precompute(MAXD);
 
-    vector <int> lim(10);
-    for (char c: n)
-    {
-        lim[c - '0']++;
-    }
+    string s;
+    cin >> s;
 
-    for (int i = 0; i < 10; i++)
-    {
-        if (lim[i] > 0)
-        {
-            validpos.push_back(i);
-        }
-    }
+    for (char c: s)
+        original[c - '0']++;
 
-    vector <int> curr(10);
-    for (int p: validpos)
-    {
-        curr[p] = 1;
-    }
-
-    ll sol = 0;
-    int pos = 0;
-
-    while (true)
-    {
-        sol += solve(curr, lim);
-        if (!getNext(curr, lim, pos)) break;
-    }
-    cout<<sol<<'\n';
-
-    return 0;
+    map <int, int> digits;
+    cout << combinations(digits) << '\n';
 }
