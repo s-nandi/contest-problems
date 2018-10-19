@@ -47,12 +47,12 @@ int main()
         cin >> a[i];
     }
 
-    vector <mo_query> queries;
+    vector <mo_query> queries(q);
     for (int i = 0; i < q; i++)
     {
         int l, r;
         cin>>l>>r;
-        queries.push_back({--l, --r, i});
+        queries[i] = {--l, --r, i};
     }
     sort(queries.begin(), queries.end());
 
