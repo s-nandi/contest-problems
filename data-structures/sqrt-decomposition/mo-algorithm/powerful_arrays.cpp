@@ -1,57 +1,39 @@
 //sqrt decomposition, mo's algorithm
 //http://codeforces.com/problemset/problem/86/D
 
-#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <cmath>
+#include <bits/stdc++.h>
 
 using namespace std;
 
-#define ll long long
+typedef long long ll;
 
-const int bucket_size = 447;
+const int BLOCK = 447;
+const int MAXN = 1000000;
 
-struct query
+struct mo_query
 {
-    int left;
-    int right;
-    int index;
+    int l, r, ind;
 
-    bool operator < (query o) const
+    bool operator < (mo_query o) const
     {
-        if (left / bucket_size != o.left / bucket_size)
-        {
-            return left < o.left;
-        }
+        if (l / BLOCK != o.l / BLOCK)
+            return l < o.l;
         else
-        {
-            if ((left / bucket_size) % 2 == 0)
-            {
-                return right < o.right;
-            }
-            else
-            {
-                return o.right < right;
-            }
-        }
+            return (l / BLOCK) & 1 ? (o.r < r) : (r < o.r);
     }
 };
 
-ll add_element(ll element, vector <int> &counts, ll curr_sum)
+int counts[MAXN + 5];
+void mo_add(ll elem, ll &sol)
 {
-    int elem_count = counts[element];
-    counts[element]++;
-
-    return curr_sum + element * ((elem_count + 1) * (elem_count + 1) - elem_count * elem_count);
+    int cnt = counts[elem]++;
+    sol += elem * ((cnt + 1) * (cnt + 1) - cnt * cnt);
 }
 
-ll remove_element(ll element, vector <int> &counts, ll curr_sum)
+void mo_rmv(ll elem, ll &sol)
 {
-    int elem_count = counts[element];
-    counts[element]--;
-
-    return curr_sum - element * (elem_count * elem_count - (elem_count - 1) * (elem_count - 1));
+    int cnt = counts[elem]--;
+    sol -= elem * (cnt * cnt - (cnt - 1) * (cnt - 1));
 }
 
 int main()
@@ -59,64 +41,38 @@ int main()
     int n, q;
     cin>>n>>q;
 
-    ll nums[n];
-
-    ll maxn = -1;
+    vector <int> a(n);
     for (int i = 0; i < n; i++)
     {
-        cin>>nums[i];
-        maxn = max(maxn, nums[i]);
+        cin >> a[i];
     }
 
-    int l, r;
-    vector <query> queries;
-    vector <int> element_counts(maxn + 1, 0);
-
+    vector <mo_query> queries;
     for (int i = 0; i < q; i++)
     {
+        int l, r;
         cin>>l>>r;
-        --l;
-        --r;
-        queries.push_back({l, r, i});
+        queries.push_back({--l, --r, i});
     }
-
     sort(queries.begin(), queries.end());
 
-    int left_pointer = 0;
-    int right_pointer = 0;
-    ll curr_val = add_element(nums[0], element_counts, 0);
-
-    ll sols[q];
-    
-    for (int i = 0; i < queries.size(); i++)
+    ll sol = 0;
+    int lp = 0, rp = 0;
+    vector <ll> sols(q);
+    for (auto q: queries)
     {
-        while (left_pointer < queries[i].left)
-        {
-            curr_val = remove_element(nums[left_pointer], element_counts, curr_val);
-            left_pointer++;
-        }
-        while (left_pointer > queries[i].left)
-        {
-            left_pointer--;
-            curr_val = add_element(nums[left_pointer], element_counts, curr_val);
-        }
-        while (right_pointer < queries[i].right)
-        {
-            right_pointer++;
-            curr_val = add_element(nums[right_pointer], element_counts, curr_val);
-        }
-        while (right_pointer > queries[i].right)
-        {
-            curr_val = remove_element(nums[right_pointer], element_counts, curr_val);
-            right_pointer--;
-        }
-        sols[queries[i].index] = curr_val;
+        while (lp < q.l)
+            mo_rmv(a[lp++], sol);
+        while (lp > q.l)
+            mo_add(a[--lp], sol);
+        while (rp <= q.r)
+            mo_add(a[rp++], sol);
+        while (rp - 1 > q.r)
+            mo_rmv(a[--rp], sol);
+
+        sols[q.ind] = sol;
     }
 
-    for (int i = 0; i < q; i++)
-    {
-        cout<<sols[i]<<"\n";
-    }
-
-    return 0;
+    for (auto i: sols)
+        cout << i << '\n';
 }
