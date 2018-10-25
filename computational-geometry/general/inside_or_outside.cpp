@@ -24,6 +24,7 @@ int orientation(const pt &o, const pt &a, const pt &b)
 } //cw: 1, ccw: -1, col: 0
 
 typedef vector <pt> polygon;
+int prev(int i, int n, int st = 1){return (i - st + n) % n;}
 int next(int i, int n, int st = 1){return (i + st) % n;};
 
 int pointInPolygon(polygon &poly, pt &p)
@@ -48,7 +49,7 @@ int pointInPolygon(polygon &poly, pt &p)
                 auto orient = orientation(p, poly[j], poly[i]);
                 if (orient == 0)
                     return 0;
-                else if(above == (orient == -1))
+                else if(above == (orient == 1))
                     winding += above ? 1 : -1;
             }
         }
@@ -69,6 +70,7 @@ int main()
     {
         cin >> poly[i].x >> poly[i].y;
     }
+    reverse(poly.begin(), poly.end());
 
     for (int i = 0; i < q; i++)
     {
