@@ -44,9 +44,14 @@ pt circumcenter(const pt &A, const pt &B, const pt &C)
 
 struct circle
 {
-    pt c; ptT r2;
-    bool contains(const pt &p) const {return c.dist2(p) <= r2 + EPS;}
+    pt center; ptT r;
 };
+
+int pointInCircle(circle &c, const pt &p)
+{
+    auto d = sqrt(c.center.dist2(p));
+    return d > c.r + EPS ? 1 : (d < c.r - EPS ? -1 : 0);
+} //inside: -1, outside: 1, on: 0
 
 int main()
 {
@@ -74,12 +79,11 @@ int main()
                 continue;
 
             pt center = circumcenter(points[i], points[j], points[k]);
-            ptT radius2 = points[i].dist2(center);
-
-            circle c = {center, radius2};
+            ptT radius = sqrt(points[i].dist2(center));
+            circle c = {center, radius};
             for (int h = 0; h < n; h++) if (h != i and h != j and h != k)
             {
-                if (c.contains(points[h]))
+                if (pointInCircle(c, points[h]) != 1)
                     num++;
             }
         }
