@@ -6,7 +6,9 @@
 
 using namespace std;
 
-const double EPS = 1e-6;
+typedef long double ld;
+
+const ld EPS = 1e-9;
 
 typedef long double ptT;
 struct pt
@@ -20,63 +22,63 @@ struct pt
 
     pt operator + (const pt &o) const {return {x + o.x, y + o.y};}
     pt operator - (const pt &o) const {return {x - o.x, y - o.y};}
+    pt operator * (ptT k) const {return {k * x, k * y};}
     pt operator / (ptT k) const {return {x / k, y / k};}
 
-    ptT operator * (const pt &o) const {return x * o.x + y * o.y;}
     ptT operator ^ (const pt &o) const {return x * o.y - y * o.x;}
 
-    ptT norm2() const {return *this * *this;}
+    ptT norm2() const {return x * x + y * y;}
     ptT dist2(const pt &o) const {return (*this - o).norm2();}
     pt normalize() const {return *this / sqrt(norm2());}
 
-    pt perpCw() const {return {y, -x};}
     pt rotateCw(double theta) {return {cos(theta) * x + sin(theta) * y, - sin(theta) * x + cos(theta) * y};}
+    pt perpCw() const {return {y, -x};}
 };
 
 struct line
 {
     pt a, b, ab;
 
-    line (pt p, pt q)
-    {
-        a = p, b = q;
-        ab = q - p;
-    }
+    line(){}
+    line (pt p, pt q) : a(p), b(q), ab(q - p) {}
 
-    ptT distLine(const pt &p) {return abs((p - a) ^ ab) / sqrt(ab.norm2());}
+    ptT distLine(const pt &p) const {return abs((p - a) ^ ab) / sqrt(ab.norm2());}
 };
 
-vector <line> tangentToCircles(pt a, pt b)
+struct circle
 {
-    if (a == b)
-        return {line(a, {a.x + 1, a.y + 1})};
+    pt center; ptT r;
+};
 
+vector <line> tangents(circle a, circle b, bool exterior)
+{
     vector <line> res;
-    auto c = (a + b) / 2;
-    auto d = sqrt(a.dist2(c));
-    if (d >= 1)
+    if (!exterior) b.r *= -1;
+
+    pt ab = b.center - a.center;
+    auto dr = a.r - b.r, d2 = ab.norm2(), h2 = d2 - dr * dr;
+    if (abs(d2) < EPS or h2 < 0)
     {
-        auto theta = asin(1 / d);
-
-        pt v = a - c;
-        pt v1 = v.rotateCw(theta);
-        pt v2 = v.rotateCw(-theta);
-
-        line l1 = line(c, c + v1);
-        line l2 = line(c, c + v2);
-        res.push_back(l1), res.push_back(l2);
+        auto tang = a.center + pt({0, 1}) * a.r;
+        return {{tang, tang + pt({1, 0})}};
     }
-    pt perp = ((c - a).perpCw()).normalize();
-    line l3 = line(a + perp, b + perp);
-    line l4 = line(a - perp, b - perp);
-    res.push_back(l3), res.push_back(l4);
-
+    for (auto sign : {-1, 1})
+    {
+        ld alpha = acos(dr / sqrt(d2));
+        pt v = ab.rotateCw(sign * alpha) / sqrt(d2);
+        res.push_back({a.center + v * a.r, b.center + v * b.r});
+        if (abs(h2) < EPS)
+        {
+            auto tang = res.back().a;
+            return {{tang - v.perpCw(), tang + v.perpCw()}};
+        }
+    }
     return res;
 }
 
-bool cutCircle(line &l, pt c)
+bool circleLineIntersection(const circle &c, const line &l)
 {
-    return l.distLine(c) <= 1 + EPS;
+    return l.distLine(c.center) <= c.r + EPS;
 }
 
 int main()
@@ -98,13 +100,13 @@ int main()
     {
         for (int j = i + 1; j < n; j++)
         {
-            auto lines = tangentToCircles(points[i], points[j]);
+            auto lines = tangents({points[i], 1}, {points[j], 1}, true);
             for (auto l: lines)
             {
                 int possible = 0;
                 for (int k = 0; k < n; k++)
                 {
-                    if (cutCircle(l, points[k]))
+                    if (circleLineIntersection({points[k], 1}, l))
                         possible++;
                 }
                 best = max(best, possible);
