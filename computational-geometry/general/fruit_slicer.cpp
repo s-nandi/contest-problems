@@ -1,4 +1,4 @@
-// finding max # of unit-redius circles intersected by line, circle-line intersection, circle-circle tangent creation
+// finding max # of unit-radius circles intersected by line, circle-line intersection, circle-circle tangents
 // https://open.kattis.com/problems/fruitslicer
 // 2018 North American Qualifier
 
