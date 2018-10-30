@@ -1,4 +1,4 @@
-// finding max # of unit-radius circles intersected by line, circle-line intersection, circle-circle tangents
+// finding max # of unit-redius circles intersected by line, detecting circle-line intersection, circle-circle tangents
 // https://open.kattis.com/problems/fruitslicer
 // 2018 North American Qualifier
 
@@ -50,7 +50,7 @@ struct circle
     pt center; ptT r;
 };
 
-vector <line> tangents(circle a, circle b, bool exterior)
+vector <line> tangents(circle a, circle b, bool exterior) // each tangent's direction will be from a to b (unless it's a single vertial tangent, then it'll be arbitrary)
 {
     vector <line> res;
     if (!exterior) b.r *= -1;
@@ -59,27 +59,28 @@ vector <line> tangents(circle a, circle b, bool exterior)
     auto dr = a.r - b.r, d2 = ab.norm2(), h2 = d2 - dr * dr;
     if (abs(d2) < EPS or h2 < 0)
     {
-        auto tang = a.center + pt({0, 1}) * a.r;
-        return {{tang, tang + pt({1, 0})}};
+        auto tangent = a.center + pt({0, 1});
+        return {{tangent, tangent + pt({1, 0})}}; // PS: return value (currently empty) when one circle is contained in the other
     }
     for (auto sign : {-1, 1})
     {
-        ld alpha = acos(dr / sqrt(d2));
+        ld alpha = atan2(sqrt(h2), dr);
         pt v = ab.rotateCw(sign * alpha) / sqrt(d2);
         res.push_back({a.center + v * a.r, b.center + v * b.r});
         if (abs(h2) < EPS)
         {
             auto tang = res.back().a;
-            return {{tang - v.perpCw(), tang + v.perpCw()}};
+            return {{tang - v.perpCw(), tang + v.perpCw()}}; // PS: If tangent at one point, return tangent line of arbitrary length
         }
     }
     return res;
 }
 
-bool circleLineIntersection(const circle &c, const line &l)
+int lineIntersectsCircle(const line &l, const circle &c)
 {
-    return l.distLine(c.center) <= c.r + EPS;
-}
+    auto diff = l.distLine(c.center) - c.r;
+    return diff <= -EPS ? -1 : (diff >= EPS ? 1 : 0);
+} // -1 : intersects at 2 points, 0 : intersects at 1 point, 1 : no intersection
 
 int main()
 {
@@ -106,7 +107,7 @@ int main()
                 int possible = 0;
                 for (int k = 0; k < n; k++)
                 {
-                    if (circleLineIntersection({points[k], 1}, l))
+                    if (lineIntersectsCircle(l, {points[k], 1}) != 1)
                         possible++;
                 }
                 best = max(best, possible);
