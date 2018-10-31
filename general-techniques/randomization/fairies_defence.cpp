@@ -50,7 +50,7 @@ int main()
             points[i] = {x, y, z};
         }
 
-        int iterations = 6e5;
+        int iterations = 8e5;
         random_generator rng;
         vector <int> numHits(n);
         for (int iter = 0; iter < iterations; iter++)
