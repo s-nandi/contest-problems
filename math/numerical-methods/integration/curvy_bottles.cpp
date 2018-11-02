@@ -7,7 +7,7 @@ using namespace std;
 
 typedef long double ld;
 
-const double EPS = 1e-9;
+const ld EPS = 1e-9;
 const ld PI = acos(-1);
 const int NUM_MARKS = 8;
 
