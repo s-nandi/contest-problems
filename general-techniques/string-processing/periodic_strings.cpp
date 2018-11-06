@@ -1,37 +1,19 @@
-//string rotation
-//https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&page=show_problem&problem=5970
-//2016 Mid-Atlantic Regional
+// string processing (substring rotation)
+// https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&page=show_problem&problem=5970
+// 2016 Mid-Atlantic Regional
 
-#include <iostream>
+#include <bits/stdc++.h>
 
 using namespace std;
 
-bool check(string &prev, string &curr)
+bool solve(const string &s, int k)
 {
-    for (int i = 0; i < prev.length(); i++)
+    for (int i = 0; i + k < s.length(); i += k)
     {
-        if (prev[i] != curr[(i + 1) % prev.length()])
-        {
+        auto curr = s.substr(i, k), nxt = s.substr(i + k, k);
+        rotate(curr.rbegin(), curr.rbegin() + 1, curr.rend());
+        if (curr != nxt)
             return false;
-        }
-    }
-    return true;
-}
-
-bool solve(string &s, int k)
-{
-    string prev = s.substr(0, k);
-
-    for (int i = k; i < s.length(); i += k)
-    {
-        string curr = s.substr(i, k);
-
-        if (!check(prev, curr))
-        {
-            return false;
-        }
-
-        prev = curr;
     }
     return true;
 }
@@ -39,20 +21,13 @@ bool solve(string &s, int k)
 int main()
 {
     string s;
-
-    while(cin>>s)
+    cin >> s;
+    int sol = s.length();
+    for (int i = 1; i <= s.length(); i++)
     {
-        for (int i = 1; i <= s.length(); i++)
-        {
-            if (s.length() % i != 0) continue;
-
-            if(solve(s, i))
-            {
-                cout<<i<<'\n';
-                break;
-            }
-        }
+        if (s.length() % i != 0) continue;
+        if(solve(s, i))
+            sol = min(i, sol);
     }
-
-    return 0;
+    cout << sol << '\n';
 }
