@@ -1,4 +1,4 @@
-// max flow (maximal bipartite matching)
+// max flow (maximal matching)
 // https://open.kattis.com/problems/transportation
 // 2015 East-Central NA Regional
 
