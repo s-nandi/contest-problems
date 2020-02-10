@@ -1,4 +1,4 @@
-// knapsack, sqrt of sum trick
+// knapsack
 // https://open.kattis.com/problems/licenserenewal
 // 2020 ProgNova
 
@@ -6,10 +6,10 @@
 using namespace std;
 
 #define rep(i, a, b) for(auto i = (a); i < (b); ++i)
+#define all(a) begin(a),end(a)
 
+using ll = long long;
 using vi = vector<int>;
-
-const int MAXT = 10005;
 
 int main() {
     ios_base::sync_with_stdio(false);
@@ -20,29 +20,32 @@ int main() {
     if (s1 > s2) swap(s1, s2);
 
     vi t(n);
-    rep(i, 0, n) {
-        cin >> t[i];
-    }
+    trav(i, t) cin >> i;
 
-    auto dp = vector(n + 1, vector<int>(MAXT));
+    // dp[i][j] = can fit some of first i elements s.t. partition has j weight
+    auto dp = vector(n + 1, vector<int>(s1 + 1));
+    // maxs[i] = max s s.t. dp[i][j] = true (s <= s1)
+    auto maxs = vector<int>(n + 1);
+
     dp[0][0] = true;
     rep(i, 1, n + 1) {
-        for (auto j = MAXT - 1; j >= 0; --j) {
-            if (dp[i - 1][j]) dp[i][j] = true;
-            if (j - t[i - 1] >= 0 and dp[i - 1][j - t[i - 1]]) dp[i][j] = true;
+        rep (j, 0, s1 + 1) {
+            if (j >= t[i - 1])
+                dp[i][j] = dp[i - 1][j] or dp[i - 1][j - t[i - 1]];
+            else
+                dp[i][j] = dp[i - 1][j];
+            
+            if (dp[i][j]) maxs[i] = j;
         }
     }
 
-    int best = 0;
-    auto sum = 0LL;
+    auto psums = vector<ll>(n);
+    partial_sum(all(t), begin(psums));
+
+    int sol = 0;
     rep(i, 0, n) {
-        sum += t[i];
-        rep(j, 0, s1 + 1) {
-            if (dp[i + 1][j] and sum - j <= s2) {
-                best = i + 1;
-                break;
-            }
-        }
+        auto rem = psums[i] - maxs[i];
+        if (rem <= s2) sol = i + 1;
     }
-    cout << best << '\n';
+    cout << sol << '\n';
 }
