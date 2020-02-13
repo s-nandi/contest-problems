@@ -1,10 +1,10 @@
-//centroid decomposition (sentinel visited array), dynamic programming, finding minimum edges to get path of distance k
-//https://contest.yandex.com/ioi/contest/571/problems/B/
-//IOI 2011
+// centroid decomposition (sentinel visited array), dynamic programming, finding minimum edges to get path of distance k
+// https://contest.yandex.com/ioi/contest/571/problems/B/
+// IOI 2011
 
 #include <iostream>
 #include <vector>
-//#include "grader.h"
+#include "grader.h" // Comment out to run locally
 
 using namespace std;
 
@@ -130,6 +130,8 @@ int best_path(int n, int k, int H[][2], int L[])
     return cd.sol != INF ? cd.sol : -1;
 }
 
+// Uncomment main to run locally
+/* 
 int main()
 {
     int n, k;
@@ -143,6 +145,5 @@ int main()
     }
 
     cout<<best_path(n, k, H, L)<<'\n';
-
-    return 0;
 }
+*/
