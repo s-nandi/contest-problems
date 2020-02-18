@@ -1,5 +1,6 @@
-//network flow (edmond-karp, space-efficient representation, vertex capacities)
-//https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=2375
+// network flow (edmond-karp, space-efficient representation, vertex capacities)
+// https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=2375
+// Statement: https://onlinejudge.org/external/113/p11380.pdf
 
 #include <iostream>
 #include <vector>
