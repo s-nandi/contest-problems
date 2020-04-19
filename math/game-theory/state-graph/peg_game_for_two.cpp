@@ -1,4 +1,4 @@
-// backtracking (why does this run quickly), hexagonal grid
+// state graph (minmax), backtracking (why does this run quickly), hexagonal grid
 // https://open.kattis.com/problems/peggamefortwo
 
 #include <bits/stdc++.h>
