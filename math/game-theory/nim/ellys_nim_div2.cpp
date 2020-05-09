@@ -1,5 +1,5 @@
 // nim (adding > 1024 stones is never useful in this problem), dp
-// Topcoder: EllysNimDiv2 [SRM 785 Div 2 1000 pt]
+// https://arena.topcoder.com/#/u/practiceCode/17967/123050/16135/2/334112
 
 #include <bits/stdc++.h>
 using namespace std;
