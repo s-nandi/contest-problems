@@ -1,5 +1,6 @@
 // dp (covering range with intervals), greedy (stack trick - while top of stack can combine with curr, keep combining)
 // https://codeforces.com/contest/1312/problem/E
+// Neal says you can do this in N lg N: https://codeforces.com/blog/entry/74656
 
 #include <bits/stdc++.h>
 using namespace std;
