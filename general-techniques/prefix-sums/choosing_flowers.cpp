@@ -1,4 +1,4 @@
-// prefix sums, greedy (only 1 flower needs to be repeated), binary search
+// prefix sums, greedy (only 1 flower i needs to be repeated -- only take all a's bigger than b[i] but be careful of overcounting a[i]), binary search
 // https://codeforces.com/contest/1379/problem/C
 
 #include <bits/stdc++.h>
