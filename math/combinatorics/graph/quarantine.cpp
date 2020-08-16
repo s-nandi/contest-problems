@@ -130,7 +130,7 @@ void solve() {
     auto safesafe = 0LL;
     dfs_sparse(g, s, 0, sizes, numsafe, infected_paths, safesafe);
 
-    auto mxcomp = components.empty() ? 0 : components[0].first;
+    auto mxcomp = numpairs;
     auto totalways = infected_paths + safesafe;
     cout << mxcomp << " " << totalways << '\n';
   } else {
@@ -181,6 +181,9 @@ void solve() {
 int main() {
   cin.sync_with_stdio(0); cin.tie(0);
   cin.exceptions(cin.failbit);
+
+  freopen("input.txt", "r", stdin);
+  freopen("output.txt", "w", stdout);
 
   int T;
   cin >> T;
