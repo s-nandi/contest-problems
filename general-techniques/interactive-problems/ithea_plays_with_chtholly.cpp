@@ -45,6 +45,6 @@ int main() {
     }
     a[pos] = p;
     cout << (pos + 1) << endl;
-    if constexpr (dbg) trav(i, a) cout << i << " "; cout << endl;
+    if constexpr (dbg) {trav(i, a) cout << i << " "; cout << endl;}
   }
 }
