@@ -14,6 +14,8 @@ using ll = long long;
 using ld = long double;
 using pii = pair<int,int>;
 using vi = vector<int>;
+using vll = vector<ll>;
+using vpii = vector<pii>;
  
 struct edge{int to;};
 using graph = vector<vector<edge>>;
