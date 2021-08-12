@@ -1,5 +1,6 @@
 // convex hull optimization
 // 2018 North American Qualifier
+// https://naq18.kattis.com/problems/longestlife
 
 #include <bits/stdc++.h>
 using namespace std;
